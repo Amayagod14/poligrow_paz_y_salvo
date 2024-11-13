@@ -1,4 +1,3 @@
-
 <?php
 session_start();
 require_once 'includes/auth.php';
@@ -9,10 +8,14 @@ if (!isLoggedIn()) {
 }
 
 // Obtener TODOS los Paz y Salvo (incluyendo los completados)
-$stmt = DatabaseConfig::getConnection()->prepare("SELECT * FROM empleados"); 
+$stmt = DatabaseConfig::getConnection()->prepare("
+    SELECT e.id AS empleado_id, e.nombre, e.documento, e.area, e.cargo, p.estado 
+    FROM empleados e
+    INNER JOIN paz_y_salvo p ON e.id = p.empleado_id
+"); 
 $stmt->execute();
 $result = $stmt->get_result();
-$empleados = $result->fetch_all(MYSQLI_ASSOC); // Cambié la variable a $empleados
+$empleados = $result->fetch_all(MYSQLI_ASSOC);
 $stmt->close();
 ?>
 
@@ -65,7 +68,27 @@ $stmt->close();
 
       <table class="min-w-full divide-y divide-gray-200">
         <thead class="bg-gray-50">
-          </head>
+          <tr>
+            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              Cédula
+            </th>
+            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              Nombre
+            </th>
+            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              Área
+            </th>
+            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              Cargo
+            </th>
+            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              Estado
+            </th>
+            <th scope="col" class="relative px-6 py-3">
+              <span class="sr-only">Acciones</span>
+            </th>
+          </tr>
+        </thead>
         <tbody class="bg-white divide-y divide-gray-200">
           <?php foreach ($empleados as $empleado): ?> 
           <tr>
@@ -88,8 +111,8 @@ $stmt->close();
               </span>
             </td>
             <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-              <a href="generar_paz_y_salvo.php?empleado_id=<?php echo $empleado['id']; ?>" class="text-blue-600 hover:text-blue-900">Editar</a>
-              <button class="ml-2 text-red-600 hover:text-red-900" data-id="<?php echo $empleado['id']; ?>" onclick="confirmarEliminar(this)">Eliminar</button>
+              <a href="generar_paz_y_salvo.php?empleado_id=<?php echo $empleado['empleado_id']; ?>" class="text-blue-600 hover:text-blue-900">Editar</a>
+              <button class="ml-2 text-red-600 hover:text-red-900" data-id="<?php echo $empleado['empleado_id']; ?>" onclick="confirmarEliminar(this)">Eliminar</button>
             </td>
           </tr>
           <?php endforeach; ?>
