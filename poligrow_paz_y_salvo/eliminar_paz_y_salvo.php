@@ -5,7 +5,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['empleado_id'])) {
   $empleado_id = $_POST['empleado_id'];
 
   // Eliminar las firmas relacionadas
-  $stmt = DatabaseConfig::getConnection()->prepare("DELETE FROM firmas_departamento WHERE paz_y_salvo_id = ?");
+  $stmt = DatabaseConfig::getConnection()->prepare("DELETE FROM firmas WHERE paz_y_salvo_id = ?");
   $stmt->bind_param("i", $empleado_id);
   $stmt->execute();
 
