@@ -3,11 +3,19 @@ session_start();
 require_once 'includes/auth.php';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    if (login($_POST['email'], $_POST['password'])) {
+    $email = $_POST['email'];
+    $password = $_POST['password'];
+
+    $user = getUserByEmail($email);
+
+    if (!$user) {
+        $error = "Correo incorrecto.";
+    } elseif (!password_verify($password, $user['password'])) {
+        $error = "Contraseña incorrecta.";
+    } else {
+        $_SESSION['user_id'] = $user['id'];
         header('Location: dashboard.php');
         exit;
-    } else {
-        $error = "Credenciales incorrectas.";
     }
 }
 ?>
@@ -17,6 +25,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <head>
   <title>Iniciar sesión</title>
   <link rel="stylesheet" href="css/style.css"> 
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script> <script>
+    $(document).ready(function() {
+      <?php if (isset($error)): ?>
+        // Mostrar el mensaje de error con SweetAlert2
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: '<?php echo $error; ?>'
+        });
+        $('#login-form')[0].reset(); 
+    <?php endif; ?>
+});
+  </script>
 </head>
 <body>
   <div class="container">
@@ -24,7 +46,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <?php if (isset($error)): ?>
       <p class="error"><?php echo $error; ?></p>
     <?php endif; ?>
-    <form method="POST">
+    <form method="POST" id="login-form"> 
       <div class="form-group">
         <label for="email">Email:</label>
         <input type="email" id="email" name="email" placeholder="Email" required>
