@@ -177,9 +177,11 @@ $stmt->close();
                 <?php echo $empleado['estado']; ?>
               </span>
             </td>
-            <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-              <button onclick="confirmarEditar(<?php echo $empleado['empleado_id']; ?>)" class="text-blue-600 hover:text-blue-900">Editar</button>
-              <button class="ml-2 text-red-600 hover:text-red-900" data-id="<?php echo $empleado['empleado_id']; ?>" onclick="confirmarEliminar(this)">Eliminar</button>
+              <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                <button onclick="confirmarEditar(<?php echo $empleado['empleado_id']; ?>)" class="text-blue-600 hover:text-blue-900">Editar</button>
+                <button class="ml-2 text-red-600 hover:text-red-900" data-id="<?php echo $empleado['empleado_id']; ?>" onclick="confirmarEliminar(this)">Eliminar</button>
+                <a href="visualizar_paz_y_salvo.php?empleado_id=<?php echo $empleado['empleado_id']; ?>" class="ml-2 text-green-600 hover:text-green-900">Visualizar</a>
+              </td>
             </td>
           </tr>
           <?php endforeach; ?>

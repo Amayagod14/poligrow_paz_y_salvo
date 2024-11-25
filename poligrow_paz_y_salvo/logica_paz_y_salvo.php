@@ -2,7 +2,7 @@
 // Configuración de la base de datos
 require_once 'includes/database.php';
 
-require_once 'generar_paz_y_salvo.php';
+
 // Clase para manejar el PDF
 require('fpdf/fpdf.php');
 
@@ -112,6 +112,116 @@ class PazYSalvo {
     return false; // Retornar false si no se envió el formulario
 }
 
+public function visualizarPazYSalvo($empleado_id) {
+    $pdf = new PazYSalvoPDF();
+    
+    // Información del empleado con fuente más pequeña
+    $pdf->SetFont('Arial', '', 11);
+    $pdf->MultiCell(0, 7, $this->getEmpleadoInfo($empleado_id), 0, 'J');
+
+    // Obtener el ID del Paz y Salvo
+    $paz_y_salvo_id = $this->obtenerPazYSalvoId($empleado_id);
+
+    // Obtener las firmas de la base de datos
+    $firmas = $this->obtenerFirmasPazYSalvo($paz_y_salvo_id);
+
+    // Agregar las firmas al PDF en modo solo lectura
+    $this->agregarFirmasVisualizacion($pdf, $firmas);
+
+    // Generar archivo PDF en modo solo lectura ('I' para mostrar en el navegador)
+    $pdf->Output('I', 'paz_y_salvo_' . date('Y-m-d') . '.pdf');
+    exit;
+}
+
+private function obtenerFirmasPazYSalvo($paz_y_salvo_id) {
+    $stmt = $this->conn->prepare("SELECT * FROM firmas WHERE paz_y_salvo_id = ?");
+    $stmt->bind_param("i", $paz_y_salvo_id); 
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $firmas = $result->fetch_all(MYSQLI_ASSOC);
+    $stmt->close();
+    return $firmas;
+}
+
+private function agregarFirmasVisualizacion($pdf, $firmas) {
+    $pdf->Ln(10);
+
+    // Ajuste de dimensiones para mejor distribución (igual que en agregarFirmasDepartamentos())
+    $col_width = 85;
+    $row_height = 40;
+    $x_start = 20;
+    $x_spacing = 90;
+    $y_start = $pdf->GetY();
+    $y_spacing = 42;
+    
+    $items_per_page = 6;
+    $current_page = 1;
+
+    foreach ($this->departments as $index => $dept) {
+        // Cambiar de página después de 6 items
+        if ($index == $items_per_page) {
+            $pdf->AddPage();
+            $y_start = $pdf->GetY();
+            $current_page = 2;
+        }
+
+        // Calcular posición (igual que en agregarFirmasDepartamentos())
+        $col = ($index % 2);
+        $row = floor(($index % $items_per_page) / 2);
+        
+        $x_pos = $x_start + ($col * $x_spacing);
+        $y_pos = $y_start + ($row * $y_spacing);
+        
+        if ($current_page == 2) {
+            $y_pos = $y_start + (($row) * $y_spacing);
+        }
+
+        $pdf->SetXY($x_pos, $y_pos);
+
+        // Título del departamento
+        $pdf->SetFont('Arial', 'B', 9);
+        $pdf->Cell($col_width, 6, $dept, 1, 2, 'C');
+
+        // Buscar la firma correspondiente al departamento
+        foreach ($firmas as $firma) {
+            if ($firma['departamento'] === $dept) {
+                // Mostrar la firma en el PDF
+                $imagen_firma = $firma['imagen_firma'];
+                $temp_filename = tempnam(sys_get_temp_dir(), 'firma_') . '.png';
+                file_put_contents($temp_filename, $imagen_firma);
+
+                // Calcular posición centrada para la firma
+                $firma_width = 35; 
+                $firma_height = 25; 
+                $x_firma = $x_pos + ($col_width - $firma_width) / 2;
+                $y_firma = $y_pos + 8; 
+
+                $pdf->Image(
+                    $temp_filename,
+                    $x_firma,
+                    $y_firma,
+                    $firma_width,
+                    $firma_height
+                );
+
+                unlink($temp_filename);
+
+                // Mostrar el nombre del firmante y la fecha
+                $pdf->SetXY($x_pos, $y_pos + $row_height - 8);
+                $pdf->SetFont('Arial', '', 8.5); 
+                $nombre_firmante = substr($firma['nombre_firmante'], 0, 25);
+                $nombre_width = $col_width * 0.6; 
+                $fecha_width = $col_width * 0.4; 
+                $pdf->Cell($nombre_width, 4, $nombre_firmante, 0, 0, 'L');
+                $pdf->Cell($fecha_width, 4, $firma['fecha_firma'], 0, 0, 'R');
+
+                break; // Salir del bucle una vez que se encuentra la firma
+            }
+        }
+    }
+}
+
+
   private function guardarPazYSalvo($empleado_id) {
     $stmt = $this->conn->prepare("INSERT INTO paz_y_salvo (empleado_id) VALUES (?)");
     $stmt->bind_param("i", $empleado_id);
@@ -142,8 +252,9 @@ class PazYSalvo {
         ) VALUES (?, ?, ?, ?, ?, ?, ?)
     ");
 
-    $fecha_ingreso = date('Y-m-d', strtotime($_POST['fecha_ingreso']));
-    $fecha_retiro = date('Y-m-d', strtotime($_POST['fecha_retiro']));
+     // Convertir fechas al formato yyyy-mm-dd antes de guardarlas
+     $fecha_ingreso = date('Y-m-d', strtotime(str_replace('/', '-', $_POST['fecha_ingreso'])));
+     $fecha_retiro = date('Y-m-d', strtotime(str_replace('/', '-', $_POST['fecha_retiro'])));
 
     // Obtener los valores de $_POST (sin el estado)
     $valores = [
@@ -179,8 +290,9 @@ class PazYSalvo {
         WHERE id = ?
     ");
 
-    $fecha_ingreso = date('Y-m-d', strtotime($_POST['fecha_ingreso']));
-    $fecha_retiro = date('Y-m-d', strtotime($_POST['fecha_retiro']));
+    // Convertir fechas al formato yyyy-mm-dd antes de guardarlas
+    $fecha_ingreso = date('Y-m-d', strtotime(str_replace('/', '-', $_POST['fecha_ingreso'])));
+    $fecha_retiro = date('Y-m-d', strtotime(str_replace('/', '-', $_POST['fecha_retiro'])));
 
     $stmt->bind_param("sssssssi",
       $_POST['nombre'],
@@ -228,7 +340,9 @@ class PazYSalvo {
             !empty($_POST["fecha_firma_$index"])) {
 
             $firma = file_get_contents($_FILES["firma_dept_$index"]['tmp_name']);
-            $fecha = date('Y-m-d', strtotime($_POST["fecha_firma_$index"]));
+
+            // Convertir la fecha al formato yyyy-mm-dd (CORREGIDO)
+            $fecha = date('Y-m-d', strtotime(str_replace('/', '-', $_POST["fecha_firma_$index"]))); 
 
             $stmt->bind_param("issss", 
                 $paz_y_salvo_id,
@@ -245,13 +359,8 @@ class PazYSalvo {
         elseif (!empty($_POST["nombre_firmante_$index"]) &&
             !empty($_POST["fecha_firma_$index"])) {
 
-            // Obtener la firma existente
-            $stmt_select = $this->conn->prepare("SELECT imagen_firma FROM firmas WHERE paz_y_salvo_id = ? AND departamento = ?");
-            $stmt_select->bind_param("is", $paz_y_salvo_id, $dept);
-            $stmt_select->execute();
-            $stmt_select->bind_result($imagen_firma_existente);
-            $stmt_select->fetch();
-            $stmt_select->close();
+            // Convertir la fecha al formato yyyy-mm-dd (CORREGIDO)
+            $fecha = date('Y-m-d', strtotime(str_replace('/', '-', $_POST["fecha_firma_$index"]))); 
 
             // Actualizar la firma (nombre, fecha e imagen si existe)
             $stmt_update = $this->conn->prepare("UPDATE firmas SET nombre_firmante = ?, fecha_firma = ? WHERE paz_y_salvo_id = ? AND departamento = ?");

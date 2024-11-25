@@ -244,15 +244,15 @@ require_once 'logica_paz_y_salvo.php';
             </select>
           </div>
           <div>
-            <label class="block text-sm font-medium text-gray-700">Fecha de ingreso</label>
-            <input type="text" name="fecha_ingreso" required class="datepicker mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                   value="<?php echo isset($empleado['fecha_ingreso']) ? date('d/m/Y', strtotime($empleado['fecha_ingreso'])) : ''; ?>">
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-gray-700">Fecha de retiro</label>
-            <input type="text" name="fecha_retiro" required class="datepicker mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                   value="<?php echo isset($empleado['fecha_retiro']) ? date('d/m/Y', strtotime($empleado['fecha_retiro'])) : ''; ?>">
-          </div>
+                <label class="block text-sm font-medium text-gray-700">Fecha de ingreso</label>
+                <input type="text" name="fecha_ingreso" required class="datepicker mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                    value="<?php echo isset($empleado['fecha_ingreso']) ? date('d/m/Y', strtotime($empleado['fecha_ingreso'])) : ''; ?>">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700">Fecha de retiro</label>
+                <input type="text" name="fecha_retiro" required class="datepicker mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                    value="<?php echo isset($empleado['fecha_retiro']) ? date('d/m/Y', strtotime($empleado['fecha_retiro'])) : ''; ?>">
+            </div>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
@@ -288,8 +288,8 @@ require_once 'logica_paz_y_salvo.php';
                             class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
                     </div>
                     <div>
-                    <label class="block text-sm font-medium text-gray-700">Fecha de firma</label>
-                    <input type="text" name="fecha_firma_<?php echo $index; ?>"
+                        <label class="block text-sm font-medium text-gray-700">Fecha de firma</label>
+                        <input type="text" name="fecha_firma_<?php echo $index; ?>"
                             value="<?php echo isset($firma['fecha_firma']) ? date('d/m/Y', strtotime($firma['fecha_firma'])) : ''; ?>"
                             class="datepicker mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
                     </div>
