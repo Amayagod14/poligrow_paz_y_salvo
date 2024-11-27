@@ -28,14 +28,26 @@ class DatabaseConfig {
     }
 }
 
-// Ejemplo de función para obtener un usuario por email
-function getUserByEmail($email) {
+// Obtener un usuario por cédula
+function getUserByCedula($cedula) {
     $conn = DatabaseConfig::getConnection();
-    $stmt = $conn->prepare("SELECT * FROM usuarios WHERE email = ?");
-    $stmt->bind_param("s", $email);
+    // Cambiar la consulta para usar la tabla 'empleados'
+    $stmt = $conn->prepare("SELECT * FROM empleados WHERE cedula = ?"); 
+    $stmt->bind_param("s", $cedula);
     $stmt->execute();
     $result = $stmt->get_result();
     return $result->fetch_assoc();
+}
+
+// Obtener un usuario por ID
+function getUserById($id) {
+    $conn = DatabaseConfig::getConnection();
+    // Cambiar la consulta para usar la tabla 'empleados'
+    $stmt = $conn->prepare("SELECT * FROM empleados WHERE id = ?"); 
+    $stmt->bind_param("i", $id);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    return $result->fetch_assoc(); 
 }
 
 // ... otras funciones para interactuar con la base de datos ...

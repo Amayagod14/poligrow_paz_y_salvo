@@ -1,20 +1,23 @@
 <?php
 require_once 'database.php';
 
-function login($email, $password) {
-    $user = getUserByEmail($email);
+function login($cedula, $password) {
+    $user = getUserByCedula($cedula);
     if ($user && password_verify($password, $user['password'])) {
         $_SESSION['user_id'] = $user['id'];
+        $_SESSION['es_admin'] = $user['es_admin'];
         return true;
     }
     return false;
 }
 
-function register($nombre, $email, $password) {
+function register($cedula, $nombre, $cargo, $area, $password) {
     $conn = DatabaseConfig::getConnection();
     $hashed_password = password_hash($password, PASSWORD_DEFAULT);
-    $stmt = $conn->prepare("INSERT INTO usuarios (nombre, email, password) VALUES (?, ?, ?)");
-    $stmt->bind_param("sss", $nombre, $email, $hashed_password);
+
+    // Cambiar la consulta para usar la tabla 'empleados'
+    $stmt = $conn->prepare("INSERT INTO empleados (cedula, nombre, cargo, area, password) VALUES (?, ?, ?, ?, ?)"); 
+    $stmt->bind_param("sssss", $cedula, $nombre, $cargo, $area, $hashed_password);
     return $stmt->execute();
 }
 
@@ -25,5 +28,6 @@ function isLoggedIn() {
 function logout() {
     session_destroy();
 }
+
 // ... otras funciones de autenticación ...
 ?>

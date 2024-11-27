@@ -7,187 +7,212 @@ if (!isLoggedIn()) {
     exit;
 }
 
-// Obtener TODOS los Paz y Salvo (incluyendo los completados)
+// Obtener el ID del usuario actual
+$usuario_id = $_SESSION['user_id'];
+
+// Obtener el Paz y Salvo del usuario actual
 $stmt = DatabaseConfig::getConnection()->prepare("
-    SELECT e.id AS empleado_id, e.nombre, e.documento, e.area, e.cargo, p.estado 
+    SELECT e.id AS empleado_id, e.nombre, e.cedula AS documento, e.area, e.cargo, p.estado, p.id AS paz_y_salvo_id
     FROM empleados e
     INNER JOIN paz_y_salvo p ON e.id = p.empleado_id
+    WHERE e.id = ? 
 "); 
+$stmt->bind_param("i", $usuario_id);
 $stmt->execute();
 $result = $stmt->get_result();
-$empleados = $result->fetch_all(MYSQLI_ASSOC);
+$paz_y_salvo = $result->fetch_assoc();
 $stmt->close();
+
+// Obtener el número de firmas del Paz y Salvo
+if ($paz_y_salvo) {
+  $stmt = DatabaseConfig::getConnection()->prepare("SELECT COUNT(*) FROM firmas WHERE paz_y_salvo_id = ?");
+  $stmt->bind_param("i", $paz_y_salvo['paz_y_salvo_id']);
+  $stmt->execute();
+  $stmt->bind_result($num_firmas);
+  $stmt->fetch();
+  $stmt->close();
+}
 ?>
 
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
-  <title>Dashboard</title>
-  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-  <script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-  <script>
-    function confirmarEliminar(button) {
-      Swal.fire({
-        title: '¿Estás seguro?',
-        text: "No podrás revertir esto!",
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#3085d6',
-        cancelButtonColor: '#d33',
-        confirmButtonText: 'Sí, eliminar!'
-      }).then((result) => {
-        if (result.isConfirmed) {
-          var empleado_id = button.dataset.id;
-          // Enviar solicitud AJAX para eliminar el registro
-          $.ajax({
-            url: 'eliminar_paz_y_salvo.php',
-            type: 'POST',
-            data: { empleado_id: empleado_id },
-            success: function(response) {
-              // Manejar la respuesta del servidor (redirigir, mostrar un mensaje, etc.)
-              Swal.fire(
-                'Eliminado!',
-                'El Paz y Salvo ha sido eliminado.',
-                'success'
-              )
-              location.reload(); // Recargar la página para actualizar la lista
-            },
-            error: function(xhr, status, error) {
-              console.error(error);
-              Swal.fire(
-                'Error!',
-                'Hubo un error al eliminar el Paz y Salvo.',
-                'error'
-              )
-            }
-          });
+    <meta charset="UTF-8">
+    <title>Dashboard - Gestión de Paz y Salvo</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <link href="css/style.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        function confirmarEliminar(empleado_id) {
+            Swal.fire({
+                title: '¿Estás seguro?',
+                text: "No podrás revertir esta acción",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#10b981',
+                cancelButtonColor: '#ef4444',
+                confirmButtonText: 'Sí, eliminar',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.ajax({
+                        url: 'eliminar_paz_y_salvo.php',
+                        type: 'POST',
+                        data: { empleado_id: empleado_id },
+                        success: function(response) {
+                            Swal.fire(
+                                'Eliminado',
+                                'El Paz y Salvo ha sido eliminado.',
+                                'success'
+                            )
+                            location.reload();
+                        },
+                        error: function(xhr, status, error) {
+                            Swal.fire(
+                                'Error',
+                                'No se pudo eliminar el Paz y Salvo.',
+                                'error'
+                            )
+                        }
+                    });
+                }
+            })
         }
-      })
-    }
 
-    function confirmarCerrarSesion() {
-        Swal.fire({
-            title: '¿Estás seguro de que quieres cerrar sesión?',
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#d33', 
-            cancelButtonColor: '#3085d6', 
-            confirmButtonText: 'Sí, cerrar sesión',
-            cancelButtonText: 'Cancelar'
-        }).then((result) => {
-            if (result.isConfirmed) {
-                // Enviar una solicitud AJAX a un archivo PHP para cerrar la sesión
-                $.ajax({
-                    url: 'logout.php', // Crea este archivo
-                    type: 'POST',
-                    success: function(response) {
-                        // Redirigir al usuario a index.php
-                        window.location.href = "index.php"; 
-                    },
-                    error: function(xhr, status, error) {
-                        console.error(error);
-                        Swal.fire(
-                            'Error!',
-                            'Hubo un error al cerrar la sesión.',
-                            'error'
-                        )
-                    }
-                });
-            }
-        })
-    }
-
-    function confirmarEditar(empleado_id) {
-        Swal.fire({
-            title: '¿Estás seguro de que quieres editar este Paz y Salvo?',
-            icon: 'question',
-            showCancelButton: true,
-            confirmButtonColor: '#3085d6',
-            cancelButtonColor: '#d33',
-            confirmButtonText: 'Sí, editar',
-            cancelButtonText: 'Cancelar'
-        }).then((result) => {
-            if (result.isConfirmed) {
-                window.location.href = "generar_paz_y_salvo.php?empleado_id=" + empleado_id; 
-            }
-        })
-    }
-  </script>
+        function confirmarCerrarSesion() {
+            Swal.fire({
+                title: '¿Cerrar Sesión?',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#10b981',
+                cancelButtonColor: '#ef4444',
+                confirmButtonText: 'Sí, cerrar sesión',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.ajax({
+                        url: 'logout.php',
+                        type: 'POST',
+                        success: function(response) {
+                            window.location.href = "index.php"; 
+                        },
+                        error: function(xhr, status, error) {
+                            Swal.fire(
+                                'Error',
+                                'No se pudo cerrar la sesión.',
+                                'error'
+                            )
+                        }
+                    });
+                }
+            })
+        }
+    </script>
 </head>
-<body class="bg-gray-100">
-  <div class="container mx-auto px-4 py-8">
-    <div class="bg-white rounded-lg shadow-lg p-6">
-      <div class="flex items-center justify-between mb-8">
-        <h1 class="text-2xl font-bold text-center text-gray-800">
-          Bienvenido al Dashboard
-        </h1>
-        <button onclick="confirmarCerrarSesion()" class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded">
-          Cerrar sesión
-        </button>
-      </div>
+<body>
+    <div class="container">
+        <div class="mb-6">
+            <h1 class="text-3xl font-bold text-green-800 mb-2">Dashboard de Paz y Salvo</h1>
+            <p class="text-gray-600">Gestiona tu documentación de manera eficiente y clara</p>
+        </div>
 
-      <h2 class="text-xl font-bold mb-4">Paz y Salvo </h2> 
+        <div class="bg-white shadow-md rounded-lg overflow-hidden">
+            <div class="px-4 py-5 sm:px-6 bg-green-50 border-b border-green-200">
+                <h3 class="text-lg leading-6 font-medium text-green-900">
+                    <i class="fas fa-leaf text-green-600 mr-2"></i>Detalles de tu Paz y Salvo
+                </h3>
+            </div>
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <i class="fas fa-user mr-2"></i>Nombre
+                        </th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <i class="fas fa-id-card mr-2"></i>Cédula
+                        </th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <i class="fas fa-briefcase mr-2"></i>Cargo
+                        </th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <i class="fas fa-building mr-2"></i>Área
+                        </th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <i class="fas fa-check-circle mr-2"></i>Estado
+                        </th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <i class="fas fa-signature mr-2"></i>Firmas
+                        </th>
+                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <i class="fas fa-cogs mr-2"></i>Acciones
+                        </th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    <?php if ($paz_y_salvo): ?>
+                    <tr>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-sm text-gray-900"><?php echo htmlspecialchars($paz_y_salvo['nombre']); ?></div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-sm text-gray-900"><?php echo htmlspecialchars($paz_y_salvo['documento']); ?></div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-sm text-gray-900"><?php echo htmlspecialchars($paz_y_salvo['cargo']); ?></div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-sm text-gray-900"><?php echo htmlspecialchars($paz_y_salvo['area']); ?></div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
+                            <?php echo ($paz_y_salvo['estado'] === 'completado') ? 'status-completed' : 'status-pending'; ?>">
+                                <?php echo htmlspecialchars($paz_y_salvo['estado']); ?>
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-sm text-gray-900"><?php echo $num_firmas; ?></div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                            <div class="flex justify-end space-x-2">
+                                <a href="visualizar_paz_y_salvo.php?empleado_id=<?php echo $paz_y_salvo['empleado_id']; ?>" 
+                                   class="btn btn-secondary">
+                                    <i class="fas fa-eye"></i> Visualizar
+                                </a>
+                                <a href="#" onclick="confirmarEliminar(<?php echo $paz_y_salvo['empleado_id']; ?>)" 
+                                   class="btn btn-danger">
+                                    <i class="fas fa-trash-alt"></i> Eliminar
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    <?php else: ?>
+                    <tr>
+                        <td colspan="7" class="px-6 py-4 text-center">
+                            <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                                <i class="fas fa-info-circle text-yellow-600 mr-2"></i>
+                                <span class="text-yellow-800">No tienes un Paz y Salvo generado</span>
+                            </div>
+                            <a href="generar_paz_y_salvo.php" class="mt-4 inline-block btn btn-primary">
+                                <i class="fas fa-plus-circle mr-2"></i>Crear Paz y Salvo
+                            </a>
+                        </td>
+                    </tr>
+                    <?php endif; ?>
+                </tbody>
+            </table>
+        </div>
 
-      <a href="generar_paz_y_salvo.php" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mb-4">
-        Generar Nuevo Paz y Salvo
-      </a>
-
-      <table class="min-w-full divide-y divide-gray-200">
-        <thead class="bg-gray-50">
-          <tr>
-            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Cédula
-            </th>
-            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Nombre
-            </th>
-            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Área
-            </th>
-            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Cargo
-            </th>
-            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Estado
-            </th>
-            <th scope="col" class="relative px-6 py-3">
-              <span class="sr-only">Acciones</span>
-            </th>
-          </tr>
-        </thead>
-        <tbody class="bg-white divide-y divide-gray-200">
-          <?php foreach ($empleados as $empleado): ?> 
-          <tr>
-            <td class="px-6 py-4 whitespace-nowrap">
-              <div class="text-sm text-gray-900"><?php echo $empleado['documento']; ?></div>
-            </td>
-            <td class="px-6 py-4 whitespace-nowrap">
-              <div class="text-sm text-gray-900"><?php echo $empleado['nombre']; ?></div>
-            </td>
-            <td class="px-6 py-4 whitespace-nowrap">
-              <div class="text-sm text-gray-900"><?php echo $empleado['area']; ?></div>
-            </td>
-            <td class="px-6 py-4 whitespace-nowrap">
-              <div class="text-sm text-gray-900"><?php echo $empleado['cargo']; ?></div>
-            </td>
-            <td class="px-6 py-4 whitespace-nowrap">
-              <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
-              <?php echo ($empleado['estado'] === 'completado') ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'; ?>">
-                <?php echo $empleado['estado']; ?>
-              </span>
-            </td>
-              <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                <button onclick="confirmarEditar(<?php echo $empleado['empleado_id']; ?>)" class="text-blue-600 hover:text-blue-900">Editar</button>
-                <button class="ml-2 text-red-600 hover:text-red-900" data-id="<?php echo $empleado['empleado_id']; ?>" onclick="confirmarEliminar(this)">Eliminar</button>
-                <a href="visualizar_paz_y_salvo.php?empleado_id=<?php echo $empleado['empleado_id']; ?>" class="ml-2 text-green-600 hover:text-green-900">Visualizar</a>
-              </td>
-            </td>
-          </tr>
-          <?php endforeach; ?>
-        </tbody>
-      </table>
+        <div class="mt-6 flex justify-between items-center">
+            <div class="text-sm text-gray-600">
+                <i class="fas fa-tree text-green-600 mr-2"></i>
+                Gestión de Paz y Salvo - Sector Palmero
+            </div>
+            <button onclick="confirmarCerrarSesion()" class="btn btn-danger">
+                <i class="fas fa-sign-out-alt mr-2"></i>Cerrar sesión
+            </button>
+        </div>
     </div>
-  </div>
 </body>
 </html>
