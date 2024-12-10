@@ -19,7 +19,7 @@ $departments = $pazYSalvo->getDepartments();
 <head>
   <title>Dashboard Administrador - Palmeras</title>
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css"> 1 
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css"> 
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
   <script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <link href="css/style.css" rel="stylesheet">
@@ -81,7 +81,7 @@ $departments = $pazYSalvo->getDepartments();
                     '</td>' +
                     '<td class="px-6 py-4 whitespace-nowrap text-right">' +
                     '<div class="flex justify-end space-x-3">' +
-                    '<a href="generar_paz_y_salvo.php?empleado_id=' + empleado.empleado_id + '&paz_y_salvo_id=' + empleado.paz_y_salvo_id + '" class="btn btn-primary rounded-lg px-3 py-2 flex items-center"><i class="fas fa-signature mr-2"></i> Firmar</a>' +
+                    '<a href="generar_paz_y_salvo_admin.php?empleado_id=' + empleado.empleado_id + '&paz_y_salvo_id=' + empleado.paz_y_salvo_id + '" class="btn btn-primary rounded-lg px-3 py-2 flex items-center"><i class="fas fa-signature mr-2"></i> Firmar</a>' +
                     '<a href="visualizar_paz_y_salvo.php?empleado_id=' + empleado.empleado_id + '" class="btn btn-secondary rounded-lg px-3 py-2 flex items-center"><i class="fas fa-eye mr-2"></i> Visualizar</a>' +
                     '</div>' +
                     '</td>' +

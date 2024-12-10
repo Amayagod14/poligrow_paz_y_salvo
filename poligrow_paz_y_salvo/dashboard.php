@@ -1,6 +1,8 @@
 <?php
-session_start();
+
+require_once 'logica_paz_y_salvo.php';
 require_once 'includes/auth.php';
+
 
 if (!isLoggedIn()) {
     header('Location: index.php');
@@ -33,6 +35,7 @@ if ($paz_y_salvo) {
   $stmt->close();
 }
 ?>
+
 
 <!DOCTYPE html>
 <html lang="es">
@@ -194,7 +197,7 @@ if ($paz_y_salvo) {
                                 <i class="fas fa-info-circle text-yellow-600 mr-2"></i>
                                 <span class="text-yellow-800">No tienes un Paz y Salvo generado</span>
                             </div>
-                            <a href="generar_paz_y_salvo.php" class="mt-4 inline-block btn btn-primary">
+                            <a href="generar_paz_y_salvo_empleado.php" class="mt-4 inline-block btn btn-primary">
                                 <i class="fas fa-plus-circle mr-2"></i>Crear Paz y Salvo
                             </a>
                         </td>
@@ -205,6 +208,7 @@ if ($paz_y_salvo) {
         </div>
 
         <div class="mt-6 flex justify-between items-center">
+            
             <div class="text-sm text-gray-600">
                 <i class="fas fa-tree text-green-600 mr-2"></i>
                 Gestión de Paz y Salvo - Sector Palmero
@@ -212,6 +216,7 @@ if ($paz_y_salvo) {
             <button onclick="confirmarCerrarSesion()" class="btn btn-danger">
                 <i class="fas fa-sign-out-alt mr-2"></i>Cerrar sesión
             </button>
+
         </div>
     </div>
 </body>
