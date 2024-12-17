@@ -19,38 +19,30 @@ class PazYSalvoPDF extends FPDF {
     // Configurar márgenes
     $this->SetMargins(20, 20, 20);
 
-    // Logo - Ajustado a la izquierda
-    $this->Image('img/logo.jpg', 20, 15, 40);
+    // Logo - Ajustado a la izquierda con ancho completo
+    $this->Image('img/cabeza.png', 20, 15, 170); // 170 para que ocupe el ancho de la página
 
-    // Mover a la posición del título (alineado con el logo)
-    $this->SetXY(70, 20);
+    // Mover a la posición del título (centrado debajo de la imagen)
+    $this->SetXY(10, 40); // Ajustar la posición vertical para que quede debajo de la imagen
 
-    // Título alineado con el logo
+    // Título centrado
     $this->SetFont('Arial', 'B', 14);
-    // Convertir a UTF-8 y luego a ISO-8859-1 para manejar tildes
     $titulo = utf8_decode('PAZ Y SALVO - TERMINACIÓN DE CONTRATO');
-    $this->Cell(0, 8, $titulo, 0, 1, 'L');
+    $this->Cell(0, 8, $titulo, 0, 1, 'C');
 
-    // Subtítulo
-    $this->SetXY(70, 30);
+    // Subtítulo centrado
     $this->SetFont('Arial', '', 11);
     $subtitulo = utf8_decode('POLIGROW COLOMBIA S.A.S.');
-    $this->Cell(0, 8, $subtitulo, 0, 1, 'L');
+    $this->Cell(0, 8, $subtitulo, 0, 1, 'C');
 
     // Espacio después del encabezado
-    $this->Ln(30);
-  }
+    $this->Ln(10); 
+}
 
   public function Footer() {
-    $this->SetY(-35);
-    $this->SetFont('Arial', '', 8);
-    // Convertir todos los textos del pie de página
-    $this->Cell(0, 4, utf8_decode('Poligrow Colombia S.A.S. - NIT 900.335.180-3'), 0, 1, 'C');
-    $this->Cell(0, 4, utf8_decode('Calle 97 Bis No. 19-20 Oficina 702'), 0, 1, 'C');
-    $this->Cell(0, 4, utf8_decode('Bogotá D.C. - Colombia'), 0, 1, 'C');
-    $this->Cell(0, 4, utf8_decode('Teléfono: +57 601 7438480'), 0, 1, 'C');
-    $this->Cell(0, 4, 'www.poligrow.com', 0, 1, 'C');
-  }
+    $this->Line(10, 265, 200, 265); // Línea de separación
+    $this->Image('img/pie.png', 10, 270, 180); // Ajustar la posición y el tamaño de la imagen
+}
 
 }
 
@@ -335,25 +327,27 @@ private function guardarEmpleado($usuario_id) {
 
   return $usuario_id; // Devolver el ID del usuario
 }
-  private function actualizarEmpleado($empleado_id) {
-    $stmt = $this->conn->prepare("
-        UPDATE empleados SET 
-            nombre = ?, 
-            cedula = ?, 
-            cargo = ?,
-            area = ?, 
-            fecha_ingreso = ?, 
-            fecha_retiro = ?, 
-            motivo_retiro = ?
-        WHERE id = ?
-    ");
+private function actualizarEmpleado($empleado_id) {
+  $stmt = $this->conn->prepare("
+      UPDATE empleados SET 
+          nombres = ?,  // <-- Actualizar la columna 'nombres'
+          apellidos = ?, // <-- Actualizar la columna 'apellidos'
+          cedula = ?, 
+          cargo = ?,
+          area = ?, 
+          fecha_ingreso = ?, 
+          fecha_retiro = ?, 
+          motivo_retiro = ?
+      WHERE id = ?
+  ");
 
-    // Convertir fechas al formato yyyy-mm-dd antes de guardarlas
-    $fecha_ingreso = date('Y-m-d', strtotime(str_replace('/', '-', $_POST['fecha_ingreso'])));
-    $fecha_retiro = date('Y-m-d', strtotime(str_replace('/', '-', $_POST['fecha_retiro'])));
+  // Convertir fechas al formato yyyy-mm-dd antes de guardarlas
+  $fecha_ingreso = date('Y-m-d', strtotime(str_replace('/', '-', $_POST['fecha_ingreso'])));
+  $fecha_retiro = date('Y-m-d', strtotime(str_replace('/', '-', $_POST['fecha_retiro'])));
 
-    $stmt->bind_param("sssssssi",
-      $_POST['nombre'],
+  $stmt->bind_param("sssssssi", 
+      $_POST['nombres'],  // <-- Obtener el valor de 'nombres' del formulario
+      $_POST['apellidos'], // <-- Obtener el valor de 'apellidos' del formulario
       $_POST['cedula'],
       $_POST['cargo'],
       $_POST['area'],
@@ -361,10 +355,10 @@ private function guardarEmpleado($usuario_id) {
       $fecha_retiro,
       $_POST['motivo_retiro'],
       $empleado_id
-    );
+  );
 
-    $stmt->execute();
-  }
+  $stmt->execute();
+}
 
   private function existePazYSalvo($documento) {
     $stmt = $this->conn->prepare("SELECT COUNT(*) FROM paz_y_salvo p JOIN empleados e ON p.empleado_id = e.id WHERE e.cedula = ?");
@@ -466,6 +460,10 @@ private function guardarEmpleado($usuario_id) {
     $stmt->close();
     return $estado;
   }
+
+  public function generarPDFPublico($empleado_id) { 
+    return $this->generarPDF($empleado_id, 'S');
+}
   
   private function generarPDF($empleado_id) {
     $pdf = new PazYSalvoPDF();
@@ -483,123 +481,127 @@ private function guardarEmpleado($usuario_id) {
     // Agregar las firmas al PDF
     $this->agregarFirmasDepartamentos($pdf, $firmas); // Pasar las firmas obtenidas de la base de datos
   
-    // Generar archivo
-    $pdf->Output('D', 'paz_y_salvo_' . date('Y-m-d') . '.pdf');
-    exit;
+   // Generar archivo PDF y devolver el contenido como string
+   return $pdf->Output('S', 'paz_y_salvo_' . date('Y-m-d') . '.pdf'); 
   }
+
+  public function getEmpleadoInfoPublico($empleado_id) {
+    return $this->getEmpleadoInfo($empleado_id);
+}
   
-  private function getEmpleadoInfo($empleado_id) {
-    $stmt = $this->conn->prepare("SELECT * FROM empleados WHERE id = ?");
-    $stmt->bind_param("i", $empleado_id);
-    $stmt->execute();
-    $result = $stmt->get_result();
-    $empleado = $result->fetch_assoc();
-    $stmt->close();
-  
-    return utf8_decode(
+private function getEmpleadoInfo($empleado_id) {
+  $stmt = $this->conn->prepare("SELECT * FROM empleados WHERE id = ?");
+  $stmt->bind_param("i", $empleado_id);
+  $stmt->execute();
+  $result = $stmt->get_result();
+  $empleado = $result->fetch_assoc();
+  $stmt->close();
+
+  return utf8_decode(
       sprintf(
-        "Poligrow %s identificado(a) con cedula de ciudadania N. %s " .
-        "el cargo %s Colombia SAS certifica que el(la) señor(a) " .
-        "desempeña del area de %s quien se encuentra paz y salvo " .
-        "con la empresa por concepto de %s",
-        $empleado['nombre'],
-        $empleado['cedula'], // Cambiar 'documento' por 'cedula'
-        $empleado['cargo'],
-        $empleado['area'],
-        $empleado['motivo_retiro']
+          "Poligrow %s %s identificado(a) con cedula de ciudadania N. %s " .
+          "el cargo %s Colombia SAS certifica que el(la) señor(a) " .
+          "desempeña del area de %s quien ingreso el dia %s y se retiro el dia %s, " . 
+          "se encuentra paz y salvo " .
+          "con la empresa por concepto de %s",
+          $empleado['nombres'],  // <-- Usar la columna 'nombres'
+          $empleado['apellidos'], // <-- Usar la columna 'apellidos'
+          $empleado['cedula'],
+          $empleado['cargo'],
+          $empleado['area'],
+          date('d/m/Y', strtotime($empleado['fecha_ingreso'])),
+          date('d/m/Y', strtotime($empleado['fecha_retiro'])),
+          $empleado['motivo_retiro']
       )
-    );
-  }
+  );
+}
   
-  private function agregarFirmasDepartamentos($pdf, $firmas) { // Recibir las firmas como parámetro
+private function agregarFirmasDepartamentos($pdf, $firmas) {
     $pdf->Ln(10);
-  
+    
     // Ajuste de dimensiones para mejor distribución
     $col_width = 85;
-    $row_height = 40; // Aumentado para más espacio
+    $row_height = 40;// Aumentado para más espacio
     $x_start = 20;
     $x_spacing = 90;
     $y_start = $pdf->GetY();
-    $y_spacing = 42; // Aumentado para dar más espacio entre filas
-  
+    $y_spacing = 42;// Aumentado para dar más espacio entre filas
+    
     $items_per_page = 6;
     $current_page = 1;
-  
+
     foreach ($this->departments as $index => $dept) {
-      // Cambiar de página después de 6 items
-      if ($index == $items_per_page) {
-        $pdf->AddPage();
-        $y_start = $pdf->GetY();
-        $current_page = 2;
-      }
-  
-      // Calcular posición
-      $col = ($index % 2);
-      $row = floor(($index % $items_per_page) / 2);
-  
-      $x_pos = $x_start + ($col * $x_spacing);
-      $y_pos = $y_start + ($row * $y_spacing);
-  
-      if ($current_page == 2) {
-        $y_pos = $y_start + (($row) * $y_spacing);
-      }
-  
-      $pdf->SetXY($x_pos, $y_pos);
-  
-      // Título del departamento
-      $pdf->SetFont('Arial', 'B', 9); // Aumentado tamaño del título
-      $pdf->Cell($col_width, 6, $dept, 1, 2, 'C');
-  
-      // Buscar la firma correspondiente al departamento
-      $firma_encontrada = false;
-      foreach ($firmas as $firma) {
-        if ($firma['departamento'] === $dept) {
-          $firma_encontrada = true;
-          $imagen_firma = $firma['imagen_firma'];
-          $nombre_firmante = $firma['nombre_firmante'];
-          $fecha_firma = $firma['fecha_firma'];
-          break;
+        // Cambiar de página después de 6 items
+        if ($index == $items_per_page) {
+            $pdf->AddPage();
+            $y_start = $pdf->GetY();
+            $current_page = 2;
         }
-      }
-  
-      if ($firma_encontrada) {
-        $temp_filename = tempnam(sys_get_temp_dir(), 'firma_') . '.png';
-        file_put_contents($temp_filename, $imagen_firma);
-  
-        // Calcular posición centrada para la firma
-        $firma_width = 35; // Ancho de la firma
-        $firma_height = 25; // Alto de la firma
-        $x_firma = $x_pos + ($col_width - $firma_width) / 2;
-        $y_firma = $y_pos + 8; // Ajustado para centrar verticalmente
-  
-        // Agregar al PDF con tamaño y posición ajustados
-        $pdf->Image(
-          $temp_filename,
-          $x_firma,
-          $y_firma,
-          $firma_width,
-          $firma_height
-        );
-  
-        unlink($temp_filename);
-  
-        // Nombre y fecha con tamaño de fuente aumentado
-        $pdf->SetXY($x_pos, $y_pos + $row_height - 8);
-        $pdf->SetFont('Arial', '', 8.5); // Aumentado tamaño de la fuente
-        $nombre_firmante = substr($nombre_firmante, 0, 25);
-  
-        // Ajustar el ancho de las celdas para el nombre y la fecha
-        $nombre_width = $col_width * 0.6; // 60% del ancho para el nombre
-        $fecha_width = $col_width * 0.4; // 40% del ancho para la fecha
-  
-        $pdf->Cell($nombre_width, 4, $nombre_firmante, 0, 0, 'L');
-  
-        // Formatear la fecha antes de mostrarla en el PDF
-        $fecha_formateada = date('d/m/Y', strtotime($fecha_firma)); 
-        $pdf->Cell($fecha_width, 4, $fecha_formateada, 0, 0, 'R'); 
-      }
+        
+        // Calcular posición
+        $col = ($index % 2);
+        $row = floor(($index % $items_per_page) / 2);
+        
+        $x_pos = $x_start + ($col * $x_spacing);
+        $y_pos = $y_start + ($row * $y_spacing);
+        
+        if ($current_page == 2) {
+            $y_pos = $y_start + (($row) * $y_spacing);
+        }
+        
+        $pdf->SetXY($x_pos, $y_pos);
+        
+        // Título del departamento
+        $pdf->SetFont('Arial', 'B', 9); // Aumentado tamaño del título
+        $pdf->Cell($col_width, 6, $dept, 1, 2, 'C');
+
+        // Buscar la firma correspondiente al departamento
+        $firma_encontrada = false;
+        foreach ($firmas as $firma) {
+            if ($firma['departamento'] === $dept) {
+                $firma_encontrada = true;
+                $imagen_firma = $firma['imagen_firma'];
+                $nombre_firmante = $firma['nombre_firmante'];
+                $fecha_firma = $firma['fecha_firma'];
+                break;
+            }
+        }
+
+        if ($firma_encontrada) {
+            $temp_filename = tempnam(sys_get_temp_dir(), 'firma_') . '.png';
+            file_put_contents($temp_filename, $imagen_firma);
+
+            // Calcular posición centrada para la firma
+            $firma_width = 35; // Ancho de la firma
+            $firma_height = 25; // Alto de la firma
+            $x_firma = $x_pos + ($col_width - $firma_width) / 2;
+            $y_firma = $y_pos + 8; // Ajustado para centrar verticalmente
+            
+            // Agregar al PDF con tamaño y posición ajustados
+            $pdf->Image(
+                $temp_filename,
+                $x_firma,
+                $y_firma,
+                $firma_width,
+                $firma_height
+            );
+            
+            unlink($temp_filename);
+            
+            // Nombre y fecha con tamaño de fuente aumentado
+            $pdf->SetXY($x_pos, $y_pos + $row_height - 8);
+            $pdf->SetFont('Arial', '', 8.5); // Aumentado tamaño de la fuente
+            $nombre_firmante = substr($nombre_firmante, 0, 25);
+            
+            // Ajustar el ancho de las celdas para el nombre y la fecha
+            $nombre_width = $col_width * 0.6; // 60% del ancho para el nombre
+            $fecha_width = $col_width * 0.4; // 40% del ancho para la fecha
+            
+            $pdf->Cell($nombre_width, 4, $nombre_firmante, 0, 0, 'L');
+            $pdf->Cell($fecha_width, 4, $fecha_firma, 0, 0, 'R');
+        }
     }
-  }
+}
   
   public function getDepartments() {
     return $this->departments;

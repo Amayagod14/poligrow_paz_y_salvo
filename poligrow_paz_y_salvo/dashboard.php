@@ -14,7 +14,7 @@ $usuario_id = $_SESSION['user_id'];
 
 // Obtener el Paz y Salvo del usuario actual
 $stmt = DatabaseConfig::getConnection()->prepare("
-    SELECT e.id AS empleado_id, e.nombre, e.cedula AS documento, e.area, e.cargo, p.estado, p.id AS paz_y_salvo_id
+    SELECT e.id AS empleado_id, e.nombres, e.apellidos, e.cedula AS documento, e.area, e.cargo, p.estado, p.id AS paz_y_salvo_id
     FROM empleados e
     INNER JOIN paz_y_salvo p ON e.id = p.empleado_id
     WHERE e.id = ? 
@@ -112,6 +112,7 @@ if ($paz_y_salvo) {
                 }
             })
         }
+        
     </script>
 </head>
 <body>
@@ -157,7 +158,7 @@ if ($paz_y_salvo) {
                     <?php if ($paz_y_salvo): ?>
                     <tr>
                         <td class="px-6 py-4 whitespace-nowrap">
-                            <div class="text-sm text-gray-900"><?php echo htmlspecialchars($paz_y_salvo['nombre']); ?></div>
+                            <div class="text-sm text-gray-900"><?php echo htmlspecialchars($paz_y_salvo['nombres'] . ' ' . $paz_y_salvo['apellidos']); ?></div> 
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
                             <div class="text-sm text-gray-900"><?php echo htmlspecialchars($paz_y_salvo['documento']); ?></div>
@@ -173,15 +174,18 @@ if ($paz_y_salvo) {
                             <?php echo ($paz_y_salvo['estado'] === 'completado') ? 'status-completed' : 'status-pending'; ?>">
                                 <?php echo htmlspecialchars($paz_y_salvo['estado']); ?>
                             </span>
-                        </td>
+                        </td>   
                         <td class="px-6 py-4 whitespace-nowrap">
                             <div class="text-sm text-gray-900"><?php echo $num_firmas; ?></div>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                            <div class="flex justify-end space-x-2">
+                            <div class="flex flex-col items-end space-y-2"> <div class="flex flex-col items-end space-y-2"> 
                                 <a href="visualizar_paz_y_salvo.php?empleado_id=<?php echo $paz_y_salvo['empleado_id']; ?>" 
                                    class="btn btn-secondary">
                                     <i class="fas fa-eye"></i> Visualizar
+                                </a>
+                                <a href="generar_pdf.php?empleado_id=<?php echo $paz_y_salvo['empleado_id']; ?>" class="btn btn-success">
+                                    <i class="fas fa-file-pdf"></i> Generar PDF
                                 </a>
                                 <a href="#" onclick="confirmarEliminar(<?php echo $paz_y_salvo['empleado_id']; ?>)" 
                                    class="btn btn-danger">

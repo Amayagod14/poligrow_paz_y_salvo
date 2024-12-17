@@ -24,34 +24,34 @@ $departments = $pazYSalvo->getDepartments();
   <script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <link href="css/style.css" rel="stylesheet">
   <script>
- function confirmarCerrarSesion() {
-            Swal.fire({
-                title: '¿Cerrar Sesión?',
-                icon: 'question',
-                showCancelButton: true,
-                confirmButtonColor: '#10b981',
-                cancelButtonColor: '#ef4444',
-                confirmButtonText: 'Sí, cerrar sesión',
-                cancelButtonText: 'Cancelar'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    $.ajax({
-                        url: 'logout.php',
-                        type: 'POST',
-                        success: function(response) {
-                            window.location.href = "index.php"; 
-                        },
-                        error: function(xhr, status, error) {
-                            Swal.fire(
-                                'Error',
-                                'No se pudo cerrar la sesión.',
-                                'error'
-                            )
-                        }
-                    });
-                }
-            })
-        }
+  function confirmarCerrarSesion() {
+             Swal.fire({
+                 title: '¿Cerrar Sesión?',
+                 icon: 'question',
+                 showCancelButton: true,
+                 confirmButtonColor: '#10b981',
+                 cancelButtonColor: '#ef4444',
+                 confirmButtonText: 'Sí, cerrar sesión',
+                 cancelButtonText: 'Cancelar'
+             }).then((result) => {
+                 if (result.isConfirmed) {
+                     $.ajax({
+                         url: 'logout.php',
+                         type: 'POST',
+                         success: function(response) {
+                             window.location.href = "index.php"; 
+                         },
+                         error: function(xhr, status, error) {
+                             Swal.fire(
+                                 'Error',
+                                 'No se pudo cerrar la sesión.',
+                                 'error'
+                             )
+                         }
+                     });
+                 }
+             })
+         }
 
     $(document).ready(function() {
       // Función para actualizar la tabla con los resultados del filtro
@@ -62,29 +62,29 @@ $departments = $pazYSalvo->getDepartments();
         // Agregar las nuevas filas a la tabla
         $.each(empleados, function(index, empleado) {
           var row = '<tr>' +
-                    '<td class="px-6 py-4 whitespace-nowrap">' +
-                    '<div class="text-sm text-gray-900">' + empleado.documento + '</div>' +
-                    '</td>' +
-                    '<td class="px-6 py-4 whitespace-nowrap">' +
-                    '<div class="text-sm text-gray-900">' + empleado.nombre + '</div>' +
-                    '</td>' +
-                    '<td class="px-6 py-4 whitespace-nowrap">' +
-                    '<div class="text-sm text-gray-900">' + empleado.area + '</div>' +
-                    '</td>' +
-                    '<td class="px-6 py-4 whitespace-nowrap">' +
-                    '<div class="text-sm text-gray-900">' + empleado.cargo + '</div>' +
-                    '</td>' +
-                    '<td class="px-6 py-4 whitespace-nowrap">' +
-                    '<span class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ' + 
-                    (empleado.estado === 'completado' ? 'status-completed' : 'status-pending') + '">' +
-                    empleado.estado + '</span>' +
-                    '</td>' +
-                    '<td class="px-6 py-4 whitespace-nowrap text-right">' +
-                    '<div class="flex justify-end space-x-3">' +
-                    '<a href="generar_paz_y_salvo_admin.php?empleado_id=' + empleado.empleado_id + '&paz_y_salvo_id=' + empleado.paz_y_salvo_id + '" class="btn btn-primary rounded-lg px-3 py-2 flex items-center"><i class="fas fa-signature mr-2"></i> Firmar</a>' +
-                    '<a href="visualizar_paz_y_salvo.php?empleado_id=' + empleado.empleado_id + '" class="btn btn-secondary rounded-lg px-3 py-2 flex items-center"><i class="fas fa-eye mr-2"></i> Visualizar</a>' +
-                    '</div>' +
-                    '</td>' +
+                      '<td class="px-6 py-4 whitespace-nowrap">' +
+                        '<div class="text-sm text-gray-900">' + empleado.documento + '</div>' +
+                      '</td>' +
+                      '<td class="px-6 py-4 whitespace-nowrap">' +
+                        '<div class="text-sm text-gray-900">' + empleado.nombres + ' ' + empleado.apellidos + '</div>' + // <-- Mostrar nombres y apellidos
+                      '</td>' +
+                      '<td class="px-6 py-4 whitespace-nowrap">' +
+                        '<div class="text-sm text-gray-900">' + empleado.area + '</div>' +
+                      '</td>' +
+                      '<td class="px-6 py-4 whitespace-nowrap">' +
+                        '<div class="text-sm text-gray-900">' + empleado.cargo + '</div>' +
+                      '</td>' +
+                      '<td class="px-6 py-4 whitespace-nowrap">' +
+                        '<span class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ' + 
+                        (empleado.estado === 'completado' ? 'status-completed' : 'status-pending') + '">' +
+                        empleado.estado + '</span>' +
+                      '</td>' +
+                      '<td class="px-6 py-4 whitespace-nowrap text-right">' +
+                        '<div class="flex justify-end space-x-3">' +
+                          '<a href="generar_paz_y_salvo_admin.php?empleado_id=' + empleado.empleado_id + '&paz_y_salvo_id=' + empleado.paz_y_salvo_id + '" class="btn btn-primary rounded-lg px-3 py-2 flex items-center"><i class="fas fa-signature mr-2"></i> Firmar</a>' +
+                          '<a href="visualizar_paz_y_salvo.php?empleado_id=' + empleado.empleado_id + '" class="btn btn-secondary rounded-lg px-3 py-2 flex items-center"><i class="fas fa-eye mr-2"></i> Visualizar</a>' +
+                        '</div>' +
+                      '</td>' +
                     '</tr>';
           $('#tabla-empleados tbody').append(row);
         });
