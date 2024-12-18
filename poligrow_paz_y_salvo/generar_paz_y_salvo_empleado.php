@@ -1,3 +1,4 @@
+
 <?php
 require_once 'includes/database.php';
 require_once 'logica_paz_y_salvo.php';
@@ -10,34 +11,34 @@ $paz_y_salvo_id = isset($_GET['paz_y_salvo_id']) ? $_GET['paz_y_salvo_id'] : nul
 
 // Cargar la información del empleado y las firmas si se está editando
 if ($empleado_id) {
-  $stmt = DatabaseConfig::getConnection()->prepare("SELECT * FROM empleados WHERE id = ?");
-  $stmt->bind_param("i", $empleado_id);
-  $stmt->execute();
-  $result = $stmt->get_result();
-  $empleado = $result->fetch_assoc();
-  $stmt->close();
+    $stmt = DatabaseConfig::getConnection()->prepare("SELECT * FROM empleados WHERE id = ?");
+    $stmt->bind_param("i", $empleado_id);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $empleado = $result->fetch_assoc();
+    $stmt->close();
 
-  // Cargar las firmas (usando el ID del Paz y Salvo)
-  $stmt = DatabaseConfig::getConnection()->prepare("SELECT * FROM firmas WHERE paz_y_salvo_id = ?");
-  $stmt->bind_param("i", $paz_y_salvo_id); 
-  $stmt->execute();
-  $result = $stmt->get_result();
-  $firmas = $result->fetch_all(MYSQLI_ASSOC);
-  $stmt->close();
+    // Cargar las firmas (usando el ID del Paz y Salvo)
+    $stmt = DatabaseConfig::getConnection()->prepare("SELECT * FROM firmas WHERE paz_y_salvo_id = ?");
+    $stmt->bind_param("i", $paz_y_salvo_id); 
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $firmas = $result->fetch_all(MYSQLI_ASSOC);
+    $stmt->close();
 }
 ?>
 
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Generador de Paz y Salvo - Poligrow Colombia</title>
-  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.css">
-  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-  <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
-  <script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generador de Paz y Salvo - Poligrow Colombia</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
+    <script>
       $(document).ready(function() {
   // Configuración del datepicker en español
   $.datepicker.regional['es'] = {
@@ -210,78 +211,84 @@ if ($empleado_id) {
   </script>
 </head>
 <body class="bg-gray-100">
-  <div class="container mx-auto px-4 py-8">
-    <div class="bg-white rounded-lg shadow-lg p-6">
-      <div class="flex items-center justify-between mb-8">
-        <img src="assets/images/logo.png" alt="Poligrow Logo" class="h-16">
-        <h1 class="text-2xl font-bold text-center text-gray-800">
-          Paz y Salvo - Terminación de Contrato
-        </h1>
-      </div>
+    <div class="container mx-auto px-4 py-8">
+        <div class="bg-white rounded-lg shadow-lg p-6">
+            <div class="flex items-center justify-between mb-8">
+                <img src="assets/images/logo.png" alt="Poligrow Logo" class="h-16">
+                <h1 class="text-2xl font-bold text-center text-gray-800">
+                    Paz y Salvo - Terminación de Contrato
+                </h1>
+            </div>
 
-      <form method="POST" enctype="multipart/form-data" class="space-y-6">
-        <input type="hidden" name="empleado_id" id="empleado_id" value="<?php echo $empleado_id; ?>">
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <form method="POST" enctype="multipart/form-data" class="space-y-6">
+                <input type="hidden" name="empleado_id" id="empleado_id" value="<?php echo $empleado_id; ?>">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
 
-          <?php
-          // Obtener la información del usuario
-          $usuario = getUserById($_SESSION['user_id']);
-          ?>
+                    <?php
+                    // Obtener la información del usuario
+                    $usuario = getUserById($_SESSION['user_id']);
+                    ?>
 
-          <div>
-            <label class="block text-sm font-medium text-gray-700">Nombre completo</label>
-            <input type="text" name="nombre" required
-                   value="<?php echo isset($empleado['nombre']) ? $empleado['nombre'] : $usuario['nombre']; ?>"
-                   class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-gray-700">Cédula</label>
-            <input type="text" name="cedula" required
-                   value="<?php echo isset($empleado['cedula']) ? $empleado['cedula'] : $usuario['cedula']; ?>"
-                   class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-gray-700">Cargo</label>
-            <input type="text" name="cargo" required
-                   value="<?php echo isset($empleado['cargo']) ? $empleado['cargo'] : $usuario['cargo']; ?>"
-                   class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-gray-700">Área</label>
-            <input type="text" name="area" required
-                   value="<?php echo isset($empleado['area']) ? $empleado['area'] : $usuario['area']; ?>"
-                   class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-          </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Nombres</label> 
+                        <input type="text" name="nombres" required
+                               value="<?php echo isset($empleado['nombres']) ? $empleado['nombres'] : $usuario['nombres']; ?>" 
+                               class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Apellidos</label> 
+                        <input type="text" name="apellidos" required
+                               value="<?php echo isset($empleado['apellidos']) ? $empleado['apellidos'] : $usuario['apellidos']; ?>" 
+                               class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Cédula</label>
+                        <input type="text" name="cedula" required
+                               value="<?php echo isset($empleado['cedula']) ? $empleado['cedula'] : $usuario['cedula']; ?>"
+                               class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Cargo</label>
+                        <input type="text" name="cargo" required
+                               value="<?php echo isset($empleado['cargo']) ? $empleado['cargo'] : $usuario['cargo']; ?>"
+                               class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Área</label>
+                        <input type="text" name="area" required
+                               value="<?php echo isset($empleado['area']) ? $empleado['area'] : $usuario['area']; ?>"
+                               class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                    </div>
 
-          <div>
-            <label class="block text-sm font-medium text-gray-700">Motivo de retiro</label>
-            <select name="motivo_retiro" required
-                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-              <option value="RENUNCIA" <?php echo (isset($empleado['motivo_retiro']) && $empleado['motivo_retiro'] == 'RENUNCIA') ? 'selected' : ''; ?>>Renuncia</option>
-              <option value="TERMINACION DE CONTRATO" <?php echo (isset($empleado['motivo_retiro']) && $empleado['motivo_retiro'] == 'TERMINACION DE CONTRATO') ? 'selected' : ''; ?>>Terminación de contrato</option>
-              <option value="MUTUO ACUERDO" <?php echo (isset($empleado['motivo_retiro']) && $empleado['motivo_retiro'] == 'MUTUO ACUERDO') ? 'selected' : ''; ?>>Mutuo acuerdo</option>
-            </select>
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-gray-700">Fecha de ingreso</label>
-            <input type="text" name="fecha_ingreso" required class="datepicker mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                   value="<?php echo isset($empleado['fecha_ingreso']) ? date('d/m/Y', strtotime($empleado['fecha_ingreso'])) : ''; ?>">
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-gray-700">Fecha de retiro</label>
-            <input type="text" name="fecha_retiro" required class="datepicker mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                   value="<?php echo isset($empleado['fecha_retiro']) ? date('d/m/Y', strtotime($empleado['fecha_retiro'])) : ''; ?>">
-          </div>
-        </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Motivo de retiro</label>
+                        <select name="motivo_retiro" required
+                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                            <option value="RENUNCIA" <?php echo (isset($empleado['motivo_retiro']) && $empleado['motivo_retiro'] == 'RENUNCIA') ? 'selected' : ''; ?>>Renuncia</option>
+                            <option value="TERMINACION DE CONTRATO" <?php echo (isset($empleado['motivo_retiro']) && $empleado['motivo_retiro'] == 'TERMINACION DE CONTRATO') ? 'selected' : ''; ?>>Terminación de contrato</option>
+                            <option value="MUTUO ACUERDO" <?php echo (isset($empleado['motivo_retiro']) && $empleado['motivo_retiro'] == 'MUTUO ACUERDO') ? 'selected' : ''; ?>>Mutuo acuerdo</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Fecha de ingreso</label>
+                        <input type="text" name="fecha_ingreso" required class="datepicker mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                               value="<?php echo isset($empleado['fecha_ingreso']) ? date('d/m/Y', strtotime($empleado['fecha_ingreso'])) : ''; ?>">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Fecha de retiro</label>
+                        <input type="text" name="fecha_retiro" required class="datepicker mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                               value="<?php echo isset($empleado['fecha_retiro']) ? date('d/m/Y', strtotime($empleado['fecha_retiro'])) : ''; ?>">
+                    </div>
+                </div>
 
-        <div class="mt-8 flex justify-center space-x-4">
-          <button type="submit" name="guardar_y_salir"
-                  class="bg-green-600 text-white px-8 py-3 rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2">
-            Guardar información
-          </button>
+                <div class="mt-8 flex justify-center space-x-4">
+                    <button type="submit" name="guardar_y_salir"
+                            class="bg-green-600 text-white px-8 py-3 rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2">
+                        Guardar información
+                    </button>
+                </div> 
+            </form> 
         </div> 
-      </form> 
-  </div> 
-</div> 
+    </div> 
 </body>
 </html>

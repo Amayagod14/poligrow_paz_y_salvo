@@ -14,7 +14,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $error = "Contraseña incorrecta.";
     } else {
         $_SESSION['user_id'] = $user['id'];
-        $_SESSION['es_admin'] = $user['es_admin']; 
+        $_SESSION['es_admin'] = $user['es_admin'];
+        $_SESSION['area'] = $user['area'];
 
         // Redirigir al dashboard correspondiente
         if ($_SESSION['es_admin']) {
