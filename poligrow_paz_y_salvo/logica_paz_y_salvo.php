@@ -7,44 +7,43 @@ require_once 'includes/database.php';
 require('fpdf/fpdf.php');
 
 class PazYSalvoPDF extends FPDF {
-  public function __construct() {
-    parent::__construct();
-    // Establecer la codificación para caracteres especiales
-    $this->SetFont('Arial', '', 12);
-    $this->AddPage();
-    $this->SetAuthor('Poligrow Colombia');
-  }
+    public function __construct() {
+        parent::__construct();
+        $this->SetFont('Arial', '', 12);
+        $this->AddPage();
+        $this->SetAuthor('Poligrow Colombia');
 
-  public function Header() {
-    // Configurar márgenes
-    $this->SetMargins(20, 20, 20);
+        // Ajustar márgenes para aprovechar mejor el espacio
+        $this->SetMargins(10, 10, 10); // Márgenes izquierdo, superior, derecho
+    }
 
-    // Logo - Ajustado a la izquierda con ancho completo
-    $this->Image('img/cabeza.png', 20, 15, 170); // 170 para que ocupe el ancho de la página
+    public function Header() {
+        // Logo - Ajustado a la izquierda con ancho completo
+        $this->Image('img/cabeza.png', 20, 5, 170); 
 
-    // Mover a la posición del título (centrado debajo de la imagen)
-    $this->SetXY(10, 40); // Ajustar la posición vertical para que quede debajo de la imagen
+        // Mover a la posición del título (centrado debajo de la imagen)
+        $this->SetXY(10, 20); 
 
-    // Título centrado
-    $this->SetFont('Arial', 'B', 14);
-    $titulo = utf8_decode('PAZ Y SALVO - TERMINACIÓN DE CONTRATO');
-    $this->Cell(0, 8, $titulo, 0, 1, 'C');
+        // Título centrado
+        $this->SetFont('Arial', 'B', 14);
+        $titulo = utf8_decode('PAZ Y SALVO - TERMINACIÓN DE CONTRATO');
+        $this->Cell(0, 8, $titulo, 0, 1, 'C');
 
-    // Subtítulo centrado
-    $this->SetFont('Arial', '', 11);
-    $subtitulo = utf8_decode('POLIGROW COLOMBIA S.A.S.');
-    $this->Cell(0, 8, $subtitulo, 0, 1, 'C');
+        // Subtítulo centrado
+        $this->SetFont('Arial', '', 11);
+        $subtitulo = utf8_decode('POLIGROW COLOMBIA S.A.S.');
+        $this->Cell(0, 8, $subtitulo, 0, 1, 'C');
 
-    // Espacio después del encabezado
-    $this->Ln(10); 
+        // Espacio después del encabezado
+        $this->Ln(5); // Reducido el espacio 
+    }
+
+    public function Footer() {
+        $this->Line(10, 265, 200, 265); 
+        $this->Image('img/pie.png', 10, 250, 180); 
+    }
 }
 
-  public function Footer() {
-    $this->Line(10, 265, 200, 265); // Línea de separación
-    $this->Image('img/pie.png', 10, 270, 180); // Ajustar la posición y el tamaño de la imagen
-}
-
-}
 
 // Clase para manejar el Paz y Salvo
 class PazYSalvo {
@@ -118,26 +117,7 @@ class PazYSalvo {
     return FALSE; // Retornar false si no se envió el formulario
 }
 
-public function visualizarPazYSalvo($empleado_id) {
-    $pdf = new PazYSalvoPDF();
 
-    // Información del empleado con fuente más pequeña
-    $pdf->SetFont('Arial', '', 11);
-    $pdf->MultiCell(0, 7, $this->getEmpleadoInfo($empleado_id), 0, 'J');
-
-    // Obtener el ID del Paz y Salvo
-    $paz_y_salvo_id = $this->obtenerPazYSalvoId($empleado_id);
-
-    // Obtener las firmas de la base de datos
-    $firmas = $this->obtenerFirmasPazYSalvo($paz_y_salvo_id);
-
-    // Agregar las firmas al PDF en modo solo lectura
-    $this->agregarFirmasVisualizacion($pdf, $firmas);
-
-    // Generar archivo PDF en modo solo lectura ('I' para mostrar en el navegador)
-    $pdf->Output('I', 'paz_y_salvo_' . date('Y-m-d') . '.pdf');
-    exit;
-}
 
   private function obtenerFirmasPazYSalvo($paz_y_salvo_id) {
     $stmt = $this->conn->prepare("SELECT * FROM firmas WHERE paz_y_salvo_id = ?");
@@ -149,86 +129,7 @@ public function visualizarPazYSalvo($empleado_id) {
     return $firmas;
   }
 
-  private function agregarFirmasVisualizacion($pdf, $firmas) {
-    $pdf->Ln(10);
-
-    // Ajuste de dimensiones para mejor distribución (igual que en agregarFirmasDepartamentos())
-    $col_width = 85;
-    $row_height = 40;
-    $x_start = 20;
-    $x_spacing = 90;
-    $y_start = $pdf->GetY();
-    $y_spacing = 42;
-
-    $items_per_page = 6;
-    $current_page = 1;
-
-    foreach ($this->departments as $index => $dept) {
-        // Cambiar de página después de 6 items
-        if ($index == $items_per_page) {
-            $pdf->AddPage();
-            $y_start = $pdf->GetY();
-            $current_page = 2;
-        }
-
-        // Calcular posición (igual que en agregarFirmasDepartamentos())
-        $col = ($index % 2);
-        $row = floor(($index % $items_per_page) / 2);
-
-        $x_pos = $x_start + ($col * $x_spacing);
-        $y_pos = $y_start + ($row * $y_spacing);
-
-        if ($current_page == 2) {
-            $y_pos = $y_start + (($row) * $y_spacing);
-        }
-
-        $pdf->SetXY($x_pos, $y_pos);
-
-        // Título del departamento
-        $pdf->SetFont('Arial', 'B', 9);
-        $pdf->Cell($col_width, 6, $dept, 1, 2, 'C');
-
-        // Buscar la firma correspondiente al departamento
-        foreach ($firmas as $firma) {
-            if ($firma['departamento'] === $dept) {
-                // Mostrar la firma en el PDF
-                $imagen_firma = $firma['imagen_firma'];
-                $temp_filename = tempnam(sys_get_temp_dir(), 'firma_') . '.png';
-                file_put_contents($temp_filename, $imagen_firma);
-
-                // Calcular posición centrada para la firma
-                $firma_width = 35;
-                $firma_height = 25;
-                $x_firma = $x_pos + ($col_width - $firma_width) / 2;
-                $y_firma = $y_pos + 8;
-
-                $pdf->Image(
-                    $temp_filename,
-                    $x_firma,
-                    $y_firma,
-                    $firma_width,
-                    $firma_height
-                );
-
-                unlink($temp_filename);
-
-                // Mostrar el nombre del firmante y la fecha
-                $pdf->SetXY($x_pos, $y_pos + $row_height - 8);
-                $pdf->SetFont('Arial', '', 8.5);
-                $nombre_firmante = substr($firma['nombre_firmante'], 0, 25);
-                $nombre_width = $col_width * 0.6;
-                $fecha_width = $col_width * 0.4;
-                $pdf->Cell($nombre_width, 4, $nombre_firmante, 0, 0, 'L');
-                
-                // Formatear la fecha de la firma
-                $fecha_firma_formateada = date('d/m/Y', strtotime($firma['fecha_firma']));
-                $pdf->Cell($fecha_width, 4, $fecha_firma_formateada, 0, 0, 'R');
-
-                break; // Salir del bucle una vez que se encuentra la firma
-            }
-        }
-    }
-}
+ 
 
 
 public function crearPazYSalvo($empleado_id) {
@@ -377,52 +278,80 @@ private function actualizarEmpleado($empleado_id) {
             departamento,
             nombre_firmante,
             fecha_firma,
-            imagen_firma
-        ) VALUES (?, ?, ?, ?, ?)
+            imagen_firma,
+            descuento,
+            descripcion_descuento
+        ) VALUES (?, ?, ?, ?, ?, ?, ?)
         ON DUPLICATE KEY UPDATE 
             nombre_firmante = VALUES(nombre_firmante),
             fecha_firma = VALUES(fecha_firma),
-            imagen_firma = VALUES(imagen_firma)
+            imagen_firma = VALUES(imagen_firma),
+            descuento = VALUES(descuento),
+            descripcion_descuento = VALUES(descripcion_descuento)
     ");
 
     foreach ($this->departments as $index => $dept) {
-      if (isset($_FILES["firma_dept_$index"]) &&
-        $_FILES["firma_dept_$index"]['error'] === 0 &&
-        !empty($_POST["nombre_firmante_$index"]) &&
-        !empty($_POST["fecha_firma_$index"])
-      ) {
+        if (isset($_FILES["firma_dept_$index"]) &&
+            $_FILES["firma_dept_$index"]['error'] === 0 &&
+            !empty($_POST["nombre_firmante_$index"]) &&
+            !empty($_POST["fecha_firma_$index"])
+        ) {
 
-        $firma = file_get_contents($_FILES["firma_dept_$index"]['tmp_name']);
+            $firma = file_get_contents($_FILES["firma_dept_$index"]['tmp_name']);
 
-        // Convertir la fecha al formato yyyy-mm-dd (CORREGIDO)
-        $fecha = date('Y-m-d', strtotime(str_replace('/', '-', $_POST["fecha_firma_$index"])));
+            // Convertir la fecha al formato yyyy-mm-dd
+            $fecha = date('Y-m-d', strtotime(str_replace('/', '-', $_POST["fecha_firma_$index"])));
 
-        $stmt->bind_param("issss",
-          $paz_y_salvo_id,
-          $dept,
-          $_POST["nombre_firmante_$index"],
-          $fecha,
-          $firma
-        );
+            // Obtener el descuento y la descripción del formulario
+            $descuento = isset($_POST["descuento_$index"]) ? $_POST["descuento_$index"] : 0.00;
+            $descripcion_descuento = isset($_POST["descripcion_descuento_$index"]) ? $_POST["descripcion_descuento_$index"] : '';
 
-        $stmt->execute();
-      }
-      // Si no se envía una nueva firma, pero ya existe una en la base de datos, 
-      // mantener la existente
-      elseif (!empty($_POST["nombre_firmante_$index"]) &&
-        !empty($_POST["fecha_firma_$index"])) {
+            $stmt->bind_param("issssds",
+                $paz_y_salvo_id,
+                $dept,
+                $_POST["nombre_firmante_$index"],
+                $fecha,
+                $firma,
+                $descuento,
+                $descripcion_descuento
+            );
 
-        // Convertir la fecha al formato yyyy-mm-dd (CORREGIDO)
-        $fecha = date('Y-m-d', strtotime(str_replace('/', '-', $_POST["fecha_firma_$index"])));
+            $stmt->execute();
+        }
+        // Si no se envía una nueva firma, pero ya existe una en la base de datos, 
+        // mantener la existente
+        elseif (!empty($_POST["nombre_firmante_$index"]) &&
+            !empty($_POST["fecha_firma_$index"])) {
 
-        // Actualizar la firma (nombre, fecha e imagen si existe)
-        $stmt_update = $this->conn->prepare("UPDATE firmas SET nombre_firmante = ?, fecha_firma = ? WHERE paz_y_salvo_id = ? AND departamento = ?");
-        $stmt_update->bind_param("sssi", $_POST["nombre_firmante_$index"], $fecha, $paz_y_salvo_id, $dept);
-        $stmt_update->execute();
-        $stmt_update->close();
-      }
+            // Convertir la fecha al formato yyyy-mm-dd
+            $fecha = date('Y-m-d', strtotime(str_replace('/', '-', $_POST["fecha_firma_$index"])));
+
+            // Obtener el descuento y la descripción del formulario
+            $descuento = isset($_POST["descuento_$index"]) ? $_POST["descuento_$index"] : 0.00;
+            $descripcion_descuento = isset($_POST["descripcion_descuento_$index"]) ? $_POST["descripcion_descuento_$index"] : '';
+
+            // Actualizar la firma (nombre, fecha, descuento y descripción)
+            $stmt_update = $this->conn->prepare("
+                UPDATE firmas SET 
+                    nombre_firmante = ?, 
+                    fecha_firma = ?, 
+                    descuento = ?, 
+                    descripcion_descuento = ? 
+                WHERE paz_y_salvo_id = ? AND departamento = ?
+            ");
+            $stmt_update->bind_param("sssdsi", 
+                $_POST["nombre_firmante_$index"], 
+                $fecha, 
+                $descuento, 
+                $descripcion_descuento, 
+                $paz_y_salvo_id, 
+                $dept
+            );
+            $stmt_update->execute();
+            $stmt_update->close();
+        }
     }
-  }
+}
 
   private function actualizarEstadoPazYSalvo($paz_y_salvo_id) {
     // Contar las firmas existentes para el Paz y Salvo
@@ -461,29 +390,29 @@ private function actualizarEmpleado($empleado_id) {
     return $estado;
   }
 
-  public function generarPDFPublico($empleado_id) { 
-    return $this->generarPDF($empleado_id, 'S');
+  public function visualizarPazYSalvo($empleado_id) {
+    return $this->generarPDF($empleado_id, 'I'); // Para mostrar en navegador
 }
-  
-  private function generarPDF($empleado_id) {
+
+public function generarPDFPublico($empleado_id) { 
+    return $this->generarPDF($empleado_id, 'S'); // Para retornar como string
+}
+
+private function generarPDF($empleado_id, $output = 'S') {
     $pdf = new PazYSalvoPDF();
-  
-    // Información del empleado con fuente más pequeña
     $pdf->SetFont('Arial', '', 11);
-    $pdf->MultiCell(0, 7, $this->getEmpleadoInfo($empleado_id), 0, 'J');
-  
-    // Obtener el ID del Paz y Salvo
+    $pdf->MultiCell(0, 5, $this->getEmpleadoInfo($empleado_id), 0, 'J');
+    
     $paz_y_salvo_id = $this->obtenerPazYSalvoId($empleado_id);
-  
-    // Obtener las firmas de la base de datos
     $firmas = $this->obtenerFirmasPazYSalvo($paz_y_salvo_id);
-  
-    // Agregar las firmas al PDF
-    $this->agregarFirmasDepartamentos($pdf, $firmas); // Pasar las firmas obtenidas de la base de datos
-  
-   // Generar archivo PDF y devolver el contenido como string
-   return $pdf->Output('S', 'paz_y_salvo_' . date('Y-m-d') . '.pdf'); 
-  }
+    $this->agregarFirmasDepartamentos($pdf, $firmas);
+    
+    $filename = 'paz_y_salvo_' . date('Y-m-d') . '.pdf';
+    return $pdf->Output($output, $filename);
+}
+
+    
+
 
   public function getEmpleadoInfoPublico($empleado_id) {
     return $this->getEmpleadoInfo($empleado_id);
@@ -518,51 +447,43 @@ private function getEmpleadoInfo($empleado_id) {
   
 private function agregarFirmasDepartamentos($pdf, $firmas) {
     $pdf->Ln(10);
-    
-    // Ajuste de dimensiones para mejor distribución
-    $col_width = 85;
-    $row_height = 40;// Aumentado para más espacio
+
+    // Ajuste de dimensiones para una sola página
+    $col_width = 90;
+    $row_height = 35; // Ajustar altura para acomodar descuentos
     $x_start = 20;
     $x_spacing = 90;
-    $y_start = $pdf->GetY();
-    $y_spacing = 42;// Aumentado para dar más espacio entre filas
-    
-    $items_per_page = 6;
-    $current_page = 1;
+    $y_start = $pdf->GetY(); 
+    $y_spacing = 35; // Ajustar espaciado entre filas
 
-    foreach ($this->departments as $index => $dept) {
-        // Cambiar de página después de 6 items
-        if ($index == $items_per_page) {
-            $pdf->AddPage();
-            $y_start = $pdf->GetY();
-            $current_page = 2;
-        }
-        
+    // Calcular cuántas filas se necesitan para todas las firmas
+    $num_firmas = count($this->departments);
+    $num_cols = 2; 
+    $num_rows = ceil($num_firmas / $num_cols);
+
+    for ($i = 0; $i < $num_firmas; $i++) {
         // Calcular posición
-        $col = ($index % 2);
-        $row = floor(($index % $items_per_page) / 2);
-        
+        $col = $i % $num_cols;
+        $row = floor($i / $num_cols);
         $x_pos = $x_start + ($col * $x_spacing);
         $y_pos = $y_start + ($row * $y_spacing);
-        
-        if ($current_page == 2) {
-            $y_pos = $y_start + (($row) * $y_spacing);
-        }
-        
+
         $pdf->SetXY($x_pos, $y_pos);
-        
-        // Título del departamento
-        $pdf->SetFont('Arial', 'B', 9); // Aumentado tamaño del título
-        $pdf->Cell($col_width, 6, $dept, 1, 2, 'C');
+
+        // Título del departamento (alto reducido)
+        $pdf->SetFont('Arial', 'B', 9);
+        $pdf->Cell($col_width, 4, $this->departments[$i], 1, 2, 'C');
 
         // Buscar la firma correspondiente al departamento
         $firma_encontrada = false;
         foreach ($firmas as $firma) {
-            if ($firma['departamento'] === $dept) {
+            if ($firma['departamento'] === $this->departments[$i]) {
                 $firma_encontrada = true;
                 $imagen_firma = $firma['imagen_firma'];
                 $nombre_firmante = $firma['nombre_firmante'];
                 $fecha_firma = $firma['fecha_firma'];
+                $descuento = $firma['descuento'];
+                $descripcion_descuento = $firma['descripcion_descuento'];
                 break;
             }
         }
@@ -571,12 +492,14 @@ private function agregarFirmasDepartamentos($pdf, $firmas) {
             $temp_filename = tempnam(sys_get_temp_dir(), 'firma_') . '.png';
             file_put_contents($temp_filename, $imagen_firma);
 
-            // Calcular posición centrada para la firma
-            $firma_width = 35; // Ancho de la firma
-            $firma_height = 25; // Alto de la firma
+            // Ajustar dimensiones de la firma para que sea más larga y menos ancha
+            $firma_width = 55; 
+            $firma_height = 20; 
+
+            // Calcular posición centrada para la firma (horizontalmente) y justo debajo del título
             $x_firma = $x_pos + ($col_width - $firma_width) / 2;
-            $y_firma = $y_pos + 8; // Ajustado para centrar verticalmente
-            
+            $y_firma = $y_pos + 6; // Ajustar la posición vertical para que esté debajo del título
+
             // Agregar al PDF con tamaño y posición ajustados
             $pdf->Image(
                 $temp_filename,
@@ -585,24 +508,45 @@ private function agregarFirmasDepartamentos($pdf, $firmas) {
                 $firma_width,
                 $firma_height
             );
-            
+
             unlink($temp_filename);
-            
-            // Nombre y fecha con tamaño de fuente aumentado
-            $pdf->SetXY($x_pos, $y_pos + $row_height - 8);
-            $pdf->SetFont('Arial', '', 8.5); // Aumentado tamaño de la fuente
-            $nombre_firmante = substr($nombre_firmante, 0, 25);
-            
+
+            // Nombre y fecha con tamaño de fuente aumentado (posición vertical ajustada)
+            $pdf->SetXY($x_pos, $y_firma + $firma_height -2); // Subir nombre y fecha 2 puntos más
+            $pdf->SetFont('Arial', '', 8.5);
+            $nombre_firmante = substr($nombre_firmante, 0, 25); // Limitar el nombre a 25 caracteres
+
             // Ajustar el ancho de las celdas para el nombre y la fecha
-            $nombre_width = $col_width * 0.6; // 60% del ancho para el nombre
-            $fecha_width = $col_width * 0.4; // 40% del ancho para la fecha
-            
+            $nombre_width = $col_width * 0.6; 
+            $fecha_width = $col_width * 0.4;
+
             $pdf->Cell($nombre_width, 4, $nombre_firmante, 0, 0, 'L');
-            $pdf->Cell($fecha_width, 4, $fecha_firma, 0, 0, 'R');
+            $pdf->Cell($fecha_width, 4, $fecha_firma, 0, 1, 'R'); 
+
+            // Mostrar la información del descuento en una sola línea
+            $pdf->SetXY($x_pos, $pdf->GetY()); 
+            $pdf->SetFont('Arial', 'B', 9);
+            
+            // Ajustar la lógica para mostrar el descuento en la misma línea
+            if (!empty($descuento) && $descuento > 0) {
+                $pdf->Cell($col_width * 0.5, 6, 'Descuento:', 0, 0, 'L'); // Título del descuento
+                $pdf->SetFont('Arial', '', 8); // Cambiar la fuente para el valor
+                $pdf->Cell($col_width * 0.5, 6, '$' . number_format($descuento, 2) . ' ' . $descripcion_descuento, 0, 1, 'L'); // Valor y descripción
+            } else {
+                $pdf->Cell($col_width, 6, 'Descuento: ', 0, 1, 'L'); // Solo mostrar el título si no hay descuento
+            }
+
+            // Agregar un borde completo al cuadro
+            $pdf->Rect($x_pos, $y_pos, $col_width, $row_height); 
         }
     }
 }
-  
+
+
+
+
+
+
   public function getDepartments() {
     return $this->departments;
   }
