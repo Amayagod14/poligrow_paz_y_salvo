@@ -322,12 +322,13 @@ $(document).ready(function() {
                                            value="<?php echo isset($firma['fecha_firma']) ? date('d/m/Y', strtotime($firma['fecha_firma'])) : ''; ?>"
                                            class="datepicker mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
                                 </div>
-                                <div> 
+                                <div>
                                     <label class="block text-sm font-medium text-gray-700">Descuento</label>
-                                    <input type="number" name="descuento_<?php echo $index; ?>" step="0.01" min="0"
-                                           value="<?php echo isset($firma['descuento']) ? $firma['descuento'] : '0.00'; ?>"
-                                           class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                                    <input type="text" name="descuento_<?php echo $index; ?>"
+                                        value="<?php echo isset($firma['descuento']) ? htmlspecialchars($firma['descuento'], ENT_QUOTES, 'UTF-8') : '0'; ?>"
+                                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
                                 </div>
+
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700">Descripción del descuento</label>
                                     <textarea name="descripcion_descuento_<?php echo $index; ?>"
