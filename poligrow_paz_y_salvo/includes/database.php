@@ -31,12 +31,13 @@ class DatabaseConfig {
 // Obtener un usuario por cédula
 function getUserByCedula($cedula) {
     $conn = DatabaseConfig::getConnection();
-    // Cambiar la consulta para usar la tabla 'empleados'
-    $stmt = $conn->prepare("SELECT * FROM empleados WHERE cedula = ?"); 
+    $stmt = $conn->prepare("SELECT id, cedula, nombres, apellidos, cargo, area, password, es_admin FROM empleados WHERE cedula = ?");
     $stmt->bind_param("s", $cedula);
     $stmt->execute();
     $result = $stmt->get_result();
-    return $result->fetch_assoc();
+    $user = $result->fetch_assoc();
+    $stmt->close();
+    return $user;
 }
 
 // Obtener un usuario por ID

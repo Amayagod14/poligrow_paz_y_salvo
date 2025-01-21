@@ -1,33 +1,95 @@
 <?php
+
 require_once 'database.php';
 
 function login($cedula, $password) {
     $user = getUserByCedula($cedula);
-    if ($user && password_verify($password, $user['password'])) {
-        $_SESSION['user_id'] = $user['id'];
-        $_SESSION['es_admin'] = $user['es_admin'];
-        return true;
+    
+    // Verificación detallada del usuario
+    if (!$user) {
+        return ['success' => false, 'message' => 'Usuario no encontrado'];
     }
-    return false;
+    
+    if (!password_verify($password, $user['password'])) {
+        return ['success' => false, 'message' => 'Contraseña incorrecta'];
+    }
+    
+    // Si llegamos aquí, las credenciales son correctas
+    $_SESSION['user_id'] = $user['id'];
+    $_SESSION['cedula'] = $user['cedula'];
+    $_SESSION['nombres'] = $user['nombres'];
+    $_SESSION['apellidos'] = $user['apellidos'];
+    $_SESSION['es_admin'] = $user['es_admin'];
+    $_SESSION['area'] = $user['area'];
+    $_SESSION['cargo'] = $user['cargo'];
+    
+    return [
+        'success' => true,
+        'es_admin' => $user['es_admin'],
+        'user' => [
+            'id' => $user['id'],
+            'cedula' => $user['cedula'],
+            'nombres' => $user['nombres'],
+            'apellidos' => $user['apellidos'],
+            'area' => $user['area'],
+            'cargo' => $user['cargo']
+        ]
+    ];
 }
 
-function register($cedula, $nombre, $cargo, $area, $password) {
+function register($cedula, $nombres, $apellidos, $cargo, $area, $password) {
     $conn = DatabaseConfig::getConnection();
+    
+    // Verificar si el usuario ya existe
+    if (getUserByCedula($cedula)) {
+        return ['success' => false, 'message' => 'La cédula ya está registrada'];
+    }
+    
     $hashed_password = password_hash($password, PASSWORD_DEFAULT);
-
-    // Cambiar la consulta para usar la tabla 'empleados'
-    $stmt = $conn->prepare("INSERT INTO empleados (cedula, nombre, cargo, area, password) VALUES (?, ?, ?, ?, ?)"); 
-    $stmt->bind_param("sssss", $cedula, $nombre, $cargo, $area, $hashed_password);
-    return $stmt->execute();
+    $fecha_ingreso = date('Y-m-d');
+    
+    $stmt = $conn->prepare("INSERT INTO empleados (cedula, nombres, apellidos, cargo, area, password, fecha_ingreso, es_admin) VALUES (?, ?, ?, ?, ?, ?, ?, 0)");
+    $stmt->bind_param("sssssss", $cedula, $nombres, $apellidos, $cargo, $area, $hashed_password, $fecha_ingreso);
+    
+    if ($stmt->execute()) {
+        return ['success' => true, 'message' => 'Usuario registrado correctamente'];
+    } else {
+        return ['success' => false, 'message' => 'Error al registrar usuario'];
+    }
 }
 
 function isLoggedIn() {
-    return isset($_SESSION['user_id']);
+    return isset($_SESSION['user_id']) && !empty($_SESSION['user_id']);
+}
+
+function isSuperAdmin() {
+    return isset($_SESSION['es_admin']) && $_SESSION['es_admin'] == 4;
+}
+
+function isAdmin() {
+    return isset($_SESSION['es_admin']) && $_SESSION['es_admin'] >= 1;
 }
 
 function logout() {
+    $_SESSION = array();
+    if (isset($_COOKIE[session_name()])) {
+        setcookie(session_name(), '', time()-42000, '/');
+    }
     session_destroy();
 }
 
-// ... otras funciones de autenticación ...
+function getCurrentUser() {
+    if (!isLoggedIn()) {
+        return null;
+    }
+    return getUserById($_SESSION['user_id']);
+}
+
+// Función para verificar permisos específicos
+function checkPermission($requiredLevel) {
+    if (!isLoggedIn()) {
+        return false;
+    }
+    return $_SESSION['es_admin'] >= $requiredLevel;
+}
 ?>
