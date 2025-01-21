@@ -271,7 +271,8 @@ private function actualizarEmpleado($empleado_id) {
     return $count > 0;
   }
 
-  private function guardarFirmas($paz_y_salvo_id) { // Actualizar para recibir el ID del Paz y Salvo
+  private function guardarFirmas($paz_y_salvo_id) {
+    // Consulta para insertar o actualizar las firmas
     $stmt = $this->conn->prepare("
         INSERT INTO firmas (
             paz_y_salvo_id,
@@ -296,17 +297,16 @@ private function actualizarEmpleado($empleado_id) {
             !empty($_POST["nombre_firmante_$index"]) &&
             !empty($_POST["fecha_firma_$index"])
         ) {
-
             $firma = file_get_contents($_FILES["firma_dept_$index"]['tmp_name']);
 
             // Convertir la fecha al formato yyyy-mm-dd
             $fecha = date('Y-m-d', strtotime(str_replace('/', '-', $_POST["fecha_firma_$index"])));
 
-            // Obtener el descuento y la descripción del formulario
-            $descuento = isset($_POST["descuento_$index"]) ? $_POST["descuento_$index"] : 0.00;
+            // Obtener el descuento y la descripción del formulario como texto
+            $descuento = isset($_POST["descuento_$index"]) ? $_POST["descuento_$index"] : '0';
             $descripcion_descuento = isset($_POST["descripcion_descuento_$index"]) ? $_POST["descripcion_descuento_$index"] : '';
 
-            $stmt->bind_param("issssds",
+            $stmt->bind_param("issssss",
                 $paz_y_salvo_id,
                 $dept,
                 $_POST["nombre_firmante_$index"],
@@ -317,17 +317,17 @@ private function actualizarEmpleado($empleado_id) {
             );
 
             $stmt->execute();
-        }
+        } 
         // Si no se envía una nueva firma, pero ya existe una en la base de datos, 
         // mantener la existente
         elseif (!empty($_POST["nombre_firmante_$index"]) &&
             !empty($_POST["fecha_firma_$index"])) {
-
+            
             // Convertir la fecha al formato yyyy-mm-dd
             $fecha = date('Y-m-d', strtotime(str_replace('/', '-', $_POST["fecha_firma_$index"])));
 
-            // Obtener el descuento y la descripción del formulario
-            $descuento = isset($_POST["descuento_$index"]) ? $_POST["descuento_$index"] : 0.00;
+            // Obtener el descuento y la descripción del formulario como texto
+            $descuento = isset($_POST["descuento_$index"]) ? $_POST["descuento_$index"] : '0';
             $descripcion_descuento = isset($_POST["descripcion_descuento_$index"]) ? $_POST["descripcion_descuento_$index"] : '';
 
             // Actualizar la firma (nombre, fecha, descuento y descripción)
@@ -339,7 +339,7 @@ private function actualizarEmpleado($empleado_id) {
                     descripcion_descuento = ? 
                 WHERE paz_y_salvo_id = ? AND departamento = ?
             ");
-            $stmt_update->bind_param("sssdsi", 
+            $stmt_update->bind_param("sssssi", 
                 $_POST["nombre_firmante_$index"], 
                 $fecha, 
                 $descuento, 
@@ -448,7 +448,6 @@ private function getEmpleadoInfo($empleado_id) {
 private function agregarFirmasDepartamentos($pdf, $firmas) {
     $pdf->Ln(10);
 
-    // Ajuste de dimensiones para una sola página
     $col_width = 90;
     $row_height = 35; // Ajustar altura para acomodar descuentos
     $x_start = 20;
@@ -456,13 +455,11 @@ private function agregarFirmasDepartamentos($pdf, $firmas) {
     $y_start = $pdf->GetY(); 
     $y_spacing = 35; // Ajustar espaciado entre filas
 
-    // Calcular cuántas filas se necesitan para todas las firmas
     $num_firmas = count($this->departments);
     $num_cols = 2; 
     $num_rows = ceil($num_firmas / $num_cols);
 
     for ($i = 0; $i < $num_firmas; $i++) {
-        // Calcular posición
         $col = $i % $num_cols;
         $row = floor($i / $num_cols);
         $x_pos = $x_start + ($col * $x_spacing);
@@ -470,11 +467,9 @@ private function agregarFirmasDepartamentos($pdf, $firmas) {
 
         $pdf->SetXY($x_pos, $y_pos);
 
-        // Título del departamento (alto reducido)
         $pdf->SetFont('Arial', 'B', 9);
         $pdf->Cell($col_width, 4, $this->departments[$i], 1, 2, 'C');
 
-        // Buscar la firma correspondiente al departamento
         $firma_encontrada = false;
         foreach ($firmas as $firma) {
             if ($firma['departamento'] === $this->departments[$i]) {
@@ -492,15 +487,12 @@ private function agregarFirmasDepartamentos($pdf, $firmas) {
             $temp_filename = tempnam(sys_get_temp_dir(), 'firma_') . '.png';
             file_put_contents($temp_filename, $imagen_firma);
 
-            // Ajustar dimensiones de la firma para que sea más larga y menos ancha
             $firma_width = 55; 
             $firma_height = 20; 
 
-            // Calcular posición centrada para la firma (horizontalmente) y justo debajo del título
             $x_firma = $x_pos + ($col_width - $firma_width) / 2;
-            $y_firma = $y_pos + 6; // Ajustar la posición vertical para que esté debajo del título
+            $y_firma = $y_pos + 6;
 
-            // Agregar al PDF con tamaño y posición ajustados
             $pdf->Image(
                 $temp_filename,
                 $x_firma,
@@ -511,36 +503,32 @@ private function agregarFirmasDepartamentos($pdf, $firmas) {
 
             unlink($temp_filename);
 
-            // Nombre y fecha con tamaño de fuente aumentado (posición vertical ajustada)
-            $pdf->SetXY($x_pos, $y_firma + $firma_height -2); // Subir nombre y fecha 2 puntos más
+            $pdf->SetXY($x_pos, $y_firma + $firma_height - 2); 
             $pdf->SetFont('Arial', '', 8.5);
-            $nombre_firmante = substr($nombre_firmante, 0, 25); // Limitar el nombre a 25 caracteres
+            $nombre_firmante = substr($nombre_firmante, 0, 25); 
 
-            // Ajustar el ancho de las celdas para el nombre y la fecha
             $nombre_width = $col_width * 0.6; 
             $fecha_width = $col_width * 0.4;
 
             $pdf->Cell($nombre_width, 4, $nombre_firmante, 0, 0, 'L');
             $pdf->Cell($fecha_width, 4, $fecha_firma, 0, 1, 'R'); 
 
-            // Mostrar la información del descuento en una sola línea
             $pdf->SetXY($x_pos, $pdf->GetY()); 
             $pdf->SetFont('Arial', 'B', 9);
             
-            // Ajustar la lógica para mostrar el descuento en la misma línea
-            if (!empty($descuento) && $descuento > 0) {
-                $pdf->Cell($col_width * 0.5, 6, 'Descuento:', 0, 0, 'L'); // Título del descuento
-                $pdf->SetFont('Arial', '', 8); // Cambiar la fuente para el valor
-                $pdf->Cell($col_width * 0.5, 6, '$' . number_format($descuento, 2) . ' ' . $descripcion_descuento, 0, 1, 'L'); // Valor y descripción
+            if (!empty($descuento)) { // Validar si hay un valor en el campo descuento
+                $pdf->Cell($col_width * 0.2, 6, 'Descuento:', 0, 0, 'L'); 
+                $pdf->SetFont('Arial', '', 8); 
+                $pdf->Cell($col_width * 0.5, 6, $descuento . ' ' . $descripcion_descuento, 0, 1, 'L'); 
             } else {
-                $pdf->Cell($col_width, 6, 'Descuento: ', 0, 1, 'L'); // Solo mostrar el título si no hay descuento
+                $pdf->Cell($col_width, 6, 'Descuento: No aplica', 0, 1, 'L'); 
             }
 
-            // Agregar un borde completo al cuadro
             $pdf->Rect($x_pos, $y_pos, $col_width, $row_height); 
         }
     }
 }
+
 
 
 
