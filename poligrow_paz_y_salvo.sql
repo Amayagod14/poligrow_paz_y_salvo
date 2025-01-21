@@ -96,7 +96,7 @@ CREATE TABLE `firmas` (
   `nombre_firmante` varchar(255) DEFAULT NULL,
   `fecha_firma` date DEFAULT NULL,
   `imagen_firma` mediumblob DEFAULT NULL,
-  `descuento` decimal(10,2) DEFAULT 0.00,
+  `descuento` VARCHAR(50) DEFAULT '0';
   `descripcion_descuento` text DEFAULT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`id`),
