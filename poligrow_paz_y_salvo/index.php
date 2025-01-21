@@ -105,9 +105,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     Iniciar sesión
                 </button>
             </form>
-            <p class="mt-4 text-center text-sm text-gray-600">
-                ¿No tienes una cuenta? <a href="register.php" class="text-green-600 hover:text-green-500">Regístrate aquí</a>
-            </p>
+
         </div>
     </div>
 </body>
