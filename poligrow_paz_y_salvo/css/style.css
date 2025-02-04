@@ -1,73 +1,29 @@
 :root {
   --primary-green: #2E8B57;
   --secondary-green: #228B22;
-  --light-green: #90EE90;
-  --background-green: #F0FFF4;
   --white: #ffffff;
   --shadow-color: rgba(0, 0, 0, 0.1);
   --danger-color: #ef4444;
   --danger-hover: #dc2626;
-  --secondary-btn: #4CAF50;
-  --secondary-btn-hover: #45a049;
-  --pending-bg: #FFF3CD;
-  --pending-text: #856404;
 }
 
-/* Reset básico */
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
 }
 
-body {
-  font-family: 'Arial', sans-serif;
-  background-color: var(--background-green);
-  background-image: url('../img/imagen_fondo.jpg');
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-  background-attachment: fixed;
-  min-height: 100vh;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-/* Overlay para el fondo */
-body::before {
-  content: '';
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.5);
-  z-index: 1;
-}
-
-/* Contenedores */
-.container, .container1 {
-  background-color: var(--white);
+.container1 {
+  background-color: rgba(255, 255, 255, 0.95);
   border-radius: 12px;
-  box-shadow: 0 8px 16px var(--shadow-color);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
   padding: 2rem;
+  max-width: 400px;
+  margin: 20px;
   position: relative;
   z-index: 2;
 }
 
-.container {
-  margin: 2rem auto;
-  width: 100%;
-}
-
-.container1 {
-  background-color: rgba(255, 255, 255, 0.95);
-  max-width: 400px;
-  margin: 20px;
-}
-
-/* Formulario de login */
 .login-form {
   width: 100%;
 }
@@ -103,10 +59,10 @@ body::before {
   box-shadow: 0 0 0 2px rgba(46, 139, 87, 0.1);
 }
 
-/* Botones */
 .btn {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 0.5rem;
   padding: 0.75rem 1.5rem;
   border-radius: 0.5rem;
@@ -114,6 +70,7 @@ body::before {
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
+  width: 100%;
 }
 
 .btn-primary {
@@ -123,78 +80,9 @@ body::before {
 
 .btn-primary:hover {
   background-color: var(--secondary-green);
-  transform: scale(1.05);
+  transform: scale(1.02);
 }
 
-.btn-secondary {
-  background-color: var(--secondary-btn);
-  color: var(--white);
-}
-
-.btn-secondary:hover {
-  background-color: var(--secondary-btn-hover);
-  transform: scale(1.05);
-}
-
-.btn-danger {
-  background-color: var(--danger-color);
-  color: var(--white);
-}
-
-.btn-danger:hover {
-  background-color: var(--danger-hover);
-  transform: scale(1.05);
-}
-
-/* Estados */
-.status-completed {
-  background-color: var(--light-green);
-  color: var(--secondary-green);
-  padding: 0.5rem 1rem;
-  border-radius: 0.25rem;
-}
-
-.status-pending {
-  background-color: var(--pending-bg);
-  color: var(--pending-text);
-  padding: 0.5rem 1rem;
-  border-radius: 0.25rem;
-}
-
-/* Iconos */
-.table-icon {
-  margin-right: 8px;
-  color: var(--primary-green);
-}
-
-/* Tablas */
-.table-responsive {
-  width: 100%;
-  overflow-x: auto;
-}
-
-table {
-  width: 100%;
-  border-collapse: collapse;
-}
-
-table td, table th {
-  padding: 0.75rem;
-  border-bottom: 1px solid #ddd;
-}
-
-table th {
-  background-color: var(--background-green);
-  color: var(--primary-green);
-  font-weight: 600;
-  text-align: left;
-}
-
-table td {
-  word-break: break-word;
-}
-
-/* Enlaces */
 a {
   color: var(--primary-green);
   text-decoration: none;
@@ -205,25 +93,23 @@ a:hover {
   color: var(--secondary-green);
 }
 
-/* Responsive */
+p {
+  text-align: center;
+  margin-top: 1rem;
+  font-size: 0.9rem;
+}
+
 @media (max-width: 768px) {
-  .container, .container1 {
+  .container1 {
     margin: 1rem;
-    padding: 1rem;
-  }
-
-  .btn {
-    padding: 0.6rem 1rem;
-  }
-
-  table {
-    font-size: 0.9rem;
+    padding: 1.5rem;
   }
 }
 
 @media (max-width: 480px) {
   .container1 {
     margin: 0.5rem;
+    padding: 1rem;
   }
 
   .form-group input {
@@ -231,7 +117,6 @@ a:hover {
   }
 
   .btn {
-    width: 100%;
-    justify-content: center;
+    padding: 0.6rem 1rem;
   }
 }
