@@ -1,5 +1,4 @@
 <?php
-
 require_once 'logica_paz_y_salvo.php';
 require_once 'includes/auth.php';
 

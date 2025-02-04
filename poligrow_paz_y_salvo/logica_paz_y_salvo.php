@@ -40,7 +40,7 @@ class PazYSalvoPDF extends FPDF {
 
     public function Footer() {
         $this->Line(10, 265, 200, 265); 
-        $this->Image('img/pie.png', 10, 250, 180); 
+        $this->Image('img/pie.png', 15, 250, 180); 
     }
 }
 

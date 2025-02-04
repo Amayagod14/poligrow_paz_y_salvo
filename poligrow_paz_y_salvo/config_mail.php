@@ -1,15 +1,14 @@
 <?php
 // config_mail.php
-define('SMTP_HOST', 'smtp.gmail.com');
-define('SMTP_USER', 'sebascata2005@gmail.com'); 
-define('SMTP_PASS', 'ffev jouu vbsb endg'); // Contraseña de aplicación de Gmail
-define('SMTP_PORT', 465);
-define('SMTP_FROM', 'sebascata2005@gmail.com');
+define('SMTP_HOST', 'smtp.office365.com'); // Servidor SMTP de Office 365
+define('SMTP_USER', 'notificacionesmesadeayuda@poligrow.com'); // Tu correo de Office 365
+define('SMTP_PASS', 'Sec_palmero1'); // Contraseña de la cuenta de Office 365
+define('SMTP_PORT', 587); // Puerto para SMTP con TLS
+define('SMTP_FROM', 'notificacionesmesadeayuda@poligrow.com');
 define('SMTP_NAME', 'Sistema de Paz y Salvos Poligrow');
 
 // Array de destinatarios
 define('IT_EMAILS', [
     'lider.it@poligrow.com',
-    'otro.correo@dominio.com',
-    'soporte@poligrow.com',
+    'sebascata2005@gmail.com',
 ]);

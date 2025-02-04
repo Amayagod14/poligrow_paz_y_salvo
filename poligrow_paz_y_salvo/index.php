@@ -55,58 +55,63 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 ?>
-
-
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
-    <title>Iniciar sesión - Sistema de Paz y Salvo</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Iniciar sesión</title>
     <link rel="stylesheet" href="css/style.css">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        body {
+            background-image: url('img/fondo.jpeg') !important;
+            background-size: cover !important;
+            background-position: center !important;
+            background-repeat: no-repeat !important;
+            background-attachment: fixed !important;
+            min-height: 100vh !important;
+            display: flex !important;
+            justify-content: center !important;
+            align-items: center !important;
+        }
+    </style>
+</head>
+<body>
+    <div class="container1"> 
+        <div class="login-form"> 
+            <h1>Iniciar sesión</h1> 
+            <form method="POST" id="login-form">
+                <div class="form-group">
+                    <label for="cedula">Cédula:</label>
+                    <input type="text" id="cedula" name="cedula" 
+                           placeholder="Ingrese su cédula" required>
+                </div>
+                <div class="form-group">
+                    <label for="password">Contraseña:</label>
+                    <input type="password" id="password" name="password" 
+                           placeholder="Ingrese su contraseña" required>
+                </div>
+                <button type="submit" class="btn btn-primary">
+                    Iniciar sesión
+                </button>
+            </form>
+        </div>
+    </div>
+
     <script>
         $(document).ready(function() {
             <?php if (isset($error)): ?>
             Swal.fire({
                 icon: 'error',
                 title: 'Error',
-                text: '<?php echo $error; ?>',
-                confirmButtonColor: '#3085d6'
+                text: '<?php echo $error; ?>'
             });
             $('#login-form')[0].reset();
             <?php endif; ?>
         });
     </script>
-</head>
-<body>
-    <div class="container1"> 
-        <div class="login-form"> 
-            <h1 class="text-3xl font-bold text-green-800 mb-4">Iniciar sesión</h1> 
-            <form method="POST" id="login-form">
-                <div class="form-group">
-                    <label for="cedula" class="block text-sm font-medium text-gray-700">Usuario:</label>
-                    <input type="text" 
-                           id="cedula" 
-                           name="cedula" 
-                           placeholder="Ingrese su ID" 
-                           required
-                           class="mt-1 focus:ring-green-500 focus:border-green-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
-                </div>
-                <div class="form-group">
-                    <label for="password" class="block text-sm font-medium text-gray-700">Contraseña:</label>
-                    <input type="password" 
-                           id="password" 
-                           name="password" 
-                           placeholder="Ingrese su contraseña" 
-                           required
-                           class="mt-1 focus:ring-green-500 focus:border-green-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
-                </div>
-                <button type="submit" class="btn btn-primary w-full mt-4">
-                    Iniciar sesión
-                </button>
-            </form>
-
-        </div>
-    </div>
 </body>
 </html>
+
