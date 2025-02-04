@@ -11,37 +11,49 @@ use PHPMailer\PHPMailer\Exception;
 function enviarNotificacionPazYSalvo($empleado_id) {
     $conn = DatabaseConfig::getConnection();
     
+    // Verificar conexión
+    if (!$conn) {
+        error_log("Error de conexión a la base de datos.");
+        return false;
+    }
+
     // Obtener información del empleado
     $stmt = $conn->prepare("SELECT nombres, apellidos, cedula, area, cargo FROM empleados WHERE id = ?");
+    
+    // Verificar preparación de la consulta
+    if (!$stmt) {
+        error_log("Error al preparar la consulta: " . $conn->error);
+        return false;
+    }
+
     $stmt->bind_param("i", $empleado_id);
     $stmt->execute();
     $empleado = $stmt->get_result()->fetch_assoc();
-    
+
+    if (!$empleado) {
+        error_log("Empleado no encontrado con ID: $empleado_id");
+        return false;
+    }
+
     $mail = new PHPMailer(true);
 
     try {
-        // Agregar debug temporal
-        $mail->SMTPDebug = SMTP::DEBUG_SERVER;
-        
+        // Configuración de SMTP
+        $mail->SMTPDebug = SMTP::DEBUG_OFF; // Desactivar depuración en producción
         $mail->isSMTP();
-        $mail->Host = SMTP_HOST;
+        $mail->Host = SMTP_HOST; // smtp.office365.com
         $mail->SMTPAuth = true;
-        $mail->Username = SMTP_USER;
-        $mail->Password = SMTP_PASS;
-        $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;
-        $mail->Port = SMTP_PORT;
-        
-        // Si hay problemas con SSL, agrega esto:
-        $mail->SMTPOptions = array(
-            'ssl' => array(
-                'verify_peer' => false,
-                'verify_peer_name' => false,
-                'allow_self_signed' => true
-            )
-        );
+        $mail->Username = SMTP_USER; // notificacionesmesadeayuda@poligrow.com
+        $mail->Password = SMTP_PASS; // Contraseña de la cuenta de Office 365
+        $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS; // Cambiar a STARTTLS
+        $mail->Port = 587; // Puerto para Office 365
         
         $mail->setFrom(SMTP_FROM, SMTP_NAME);
-        $mail->addAddress(IT_EMAIL);
+        
+        // Añadir destinatarios
+        foreach (IT_EMAILS as $email) {
+            $mail->addAddress($email);
+        }
         
         $mail->isHTML(true);
         $mail->CharSet = 'UTF-8';
@@ -61,7 +73,7 @@ function enviarNotificacionPazYSalvo($empleado_id) {
         $mail->Body = $mensaje;
         
         // Guardar log de intento de envío
-        error_log("Intentando enviar correo a: " . IT_EMAIL . " - " . date('Y-m-d H:i:s'));
+        error_log("Intentando enviar correo a: " . implode(', ', IT_EMAILS) . " - " . date('Y-m-d H:i:s'));
         
         $mail->send();
         
@@ -75,4 +87,4 @@ function enviarNotificacionPazYSalvo($empleado_id) {
         return false;
     }
 }
-
+?>
