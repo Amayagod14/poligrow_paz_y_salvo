@@ -7,18 +7,21 @@ if (isset($_GET['empleado_id'])) {
     // Crear una instancia de la clase PazYSalvo
     $pazYSalvo = new PazYSalvo(); 
 
-    // Llamar al método público que llama al método privado generarPDF()
-    $pdfContent = $pazYSalvo->generarPDFPublico($empleado_id); 
-
-    // Obtener el nombre del empleado y su cédula para el nombre del archivo (llamando al método público)
+    // Obtener la información del empleado
     $empleado = $pazYSalvo->getEmpleadoInfoPublico($empleado_id); 
 
-    // Obtener la cédula y el nombre del empleado usando expresiones regulares
-    preg_match('/con cedula de ciudadania N\.\s*(\d+)/', $empleado, $matches);
-    $cedula = $matches[1];
-    preg_match('/Poligrow\s*(.+?)\s*identificado/', $empleado, $matches);
-    $nombre = $matches[1];
-    $pdfFileName = $cedula . "_" . $nombre . ".pdf";
+    // Crear el nombre del archivo usando la información del empleado
+    $pdfFileName = $empleado['cedula'] . "_" . $empleado['nombres'] . "_" . $empleado['apellidos'] . ".pdf";
+    // Limpiar el nombre del archivo
+    $pdfFileName = preg_replace('/[^a-zA-Z0-9_\.]/', '', $pdfFileName);
+
+    // Generar el PDF
+    $pdfContent = $pazYSalvo->generarPDFPublico($empleado_id); 
+
+    // Verificar que tenemos contenido
+    if (empty($pdfContent)) {
+        die('Error: No se pudo generar el contenido del PDF');
+    }
 
     // Establecer las cabeceras para la descarga
     header('Content-Type: application/pdf');
@@ -30,7 +33,6 @@ if (isset($_GET['empleado_id'])) {
 
     // Enviar el contenido del PDF al navegador
     echo $pdfContent;
-
     exit;
 }
 ?>

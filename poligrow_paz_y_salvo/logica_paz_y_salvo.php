@@ -7,6 +7,8 @@ require_once 'includes/database.php';
 require('fpdf/fpdf.php');
 
 class PazYSalvoPDF extends FPDF {
+    private $nombreEmpleado; // Nueva propiedad para el nombre del empleado
+
     public function __construct() {
         parent::__construct();
         $this->SetFont('Arial', '', 12);
@@ -17,30 +19,42 @@ class PazYSalvoPDF extends FPDF {
         $this->SetMargins(10, 10, 10); // Márgenes izquierdo, superior, derecho
     }
 
+    // Nuevo método para establecer el nombre del empleado
+    public function setNombreEmpleado($nombre) {
+        $this->nombreEmpleado = $nombre;
+    }
+
     public function Header() {
         // Logo - Ajustado a la izquierda con ancho completo
-        $this->Image('img/cabeza.png', 20, 5, 170); 
+        $this->Image('img/cabeza.png', 10, 5, 190); 
 
         // Mover a la posición del título (centrado debajo de la imagen)
-        $this->SetXY(10, 20); 
+        $this->SetXY(20, 30); 
 
         // Título centrado
-        $this->SetFont('Arial', 'B', 14);
-        $titulo = utf8_decode('PAZ Y SALVO - TERMINACIÓN DE CONTRATO');
+        $this->SetFont('Arial', 'B', 12);
+        $titulo = utf8_decode('PAZ Y SALVO TERMINACIÓN DE CONTRATO');
         $this->Cell(0, 8, $titulo, 0, 1, 'C');
-
-        // Subtítulo centrado
-        $this->SetFont('Arial', '', 11);
-        $subtitulo = utf8_decode('POLIGROW COLOMBIA S.A.S.');
-        $this->Cell(0, 8, $subtitulo, 0, 1, 'C');
 
         // Espacio después del encabezado
         $this->Ln(5); // Reducido el espacio 
     }
 
     public function Footer() {
-        $this->Line(10, 265, 200, 265); 
-        $this->Image('img/pie.png', 15, 250, 180); 
+
+        
+        // Configurar la fuente
+        $this->SetFont('Arial', '', 12);
+        $this->SetY(-45); // Posición a 30mm del final
+        
+        // Agregar texto "Firma:"
+        $this->SetX(20); // Alinear con el margen izquierdo
+        $this->Cell(0, 10, utf8_decode('Firma:'), 0, 1, 'L');
+        
+        // Agregar el nombre del empleado en negrita
+        $this->SetX(20);
+        $this->SetFont('Arial', 'B', 12);
+        $this->Cell(0, 10, utf8_decode($this->nombreEmpleado), 0, 0, 'L');
     }
 }
 
@@ -400,53 +414,87 @@ public function generarPDFPublico($empleado_id) {
 
 private function generarPDF($empleado_id, $output = 'S') {
     $pdf = new PazYSalvoPDF();
+    
+    $stmt = $this->conn->prepare("SELECT nombres, apellidos FROM empleados WHERE id = ?");
+    $stmt->bind_param("i", $empleado_id);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $empleado = $result->fetch_assoc();
+    
+    $nombreCompleto = $empleado['nombres'] . ' ' . $empleado['apellidos'];
+    $pdf->setNombreEmpleado($nombreCompleto);
+    
+    // Configurar márgenes
+    $pdf->SetMargins(30, 30, 30);
+    
     $pdf->SetFont('Arial', '', 11);
-    $pdf->MultiCell(0, 5, $this->getEmpleadoInfo($empleado_id), 0, 'J');
+    
+    // Calcular el ancho efectivo y la posición
+    $pageWidth = $pdf->GetPageWidth();
+    $textWidth = 172; // Ancho deseado del texto
+    $leftMargin = ($pageWidth - $textWidth) / 2; // Centrar horizontalmente
+    
+    // Establecer la posición X
+    $pdf->SetX($leftMargin);
+    
+    // Usar el ancho específico para el MultiCell
+    $pdf->MultiCell($textWidth, 5, $this->getEmpleadoInfo($empleado_id), 0, 'J');
     
     $paz_y_salvo_id = $this->obtenerPazYSalvoId($empleado_id);
     $firmas = $this->obtenerFirmasPazYSalvo($paz_y_salvo_id);
     $this->agregarFirmasDepartamentos($pdf, $firmas);
     
-    $filename = 'paz_y_salvo_' . date('Y-m-d') . '.pdf';
+    $filename = 'paz_y_salvo_' . $empleado_id . '_' . date('Y-m-d') . '.pdf';
+    
     return $pdf->Output($output, $filename);
 }
 
-    
 
 
-  public function getEmpleadoInfoPublico($empleado_id) {
-    return $this->getEmpleadoInfo($empleado_id);
+public function getEmpleadoInfoPublico($empleado_id) {
+    $stmt = $this->conn->prepare("SELECT nombres, apellidos, cedula FROM empleados WHERE id = ?");
+    $stmt->bind_param("i", $empleado_id);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $empleado = $result->fetch_assoc();
+    $stmt->close();
+
+    return $empleado; // Devuelve un array con la información
 }
-  
+
 private function getEmpleadoInfo($empleado_id) {
-  $stmt = $this->conn->prepare("SELECT * FROM empleados WHERE id = ?");
-  $stmt->bind_param("i", $empleado_id);
-  $stmt->execute();
-  $result = $stmt->get_result();
-  $empleado = $result->fetch_assoc();
-  $stmt->close();
+    $stmt = $this->conn->prepare("SELECT * FROM empleados WHERE id = ?");
+    $stmt->bind_param("i", $empleado_id);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $empleado = $result->fetch_assoc();
+    $stmt->close();
 
-  return utf8_decode(
-      sprintf(
-          "Poligrow %s %s identificado(a) con cedula de ciudadania N. %s " .
-          "el cargo %s Colombia SAS certifica que el(la) señor(a) " .
-          "desempeña del area de %s quien ingreso el dia %s y se retiro el dia %s, " . 
-          "se encuentra paz y salvo " .
-          "con la empresa por concepto de %s",
-          $empleado['nombres'],  // <-- Usar la columna 'nombres'
-          $empleado['apellidos'], // <-- Usar la columna 'apellidos'
-          $empleado['cedula'],
-          $empleado['cargo'],
-          $empleado['area'],
-          date('d/m/Y', strtotime($empleado['fecha_ingreso'])),
-          date('d/m/Y', strtotime($empleado['fecha_retiro'])),
-          $empleado['motivo_retiro']
-      )
-  );
+    // Formatear las fechas
+    $fechaIngreso = date('d/m/Y', strtotime($empleado['fecha_ingreso']));
+    $fechaRetiro = date('d/m/Y', strtotime($empleado['fecha_retiro']));
+
+    return utf8_decode(
+        sprintf(
+            "Poligrow Colombia SAS. Certifica que el Señor(a) %s %s " .
+            "quien desempeña el cargo de %s " .
+            "identificado con cédula de ciudadanía número %s " .
+            "se encuentra Paz y Salvo con la empresa por concepto de %s.\n\n" .
+            "Fecha de ingreso: %s" . str_repeat(" ", 35) . "Fecha de retiro: %s",
+            
+            $empleado['nombres'],
+            $empleado['apellidos'],
+            $empleado['cargo'],
+            $empleado['cedula'],
+            $empleado['motivo_retiro'], // Asumiendo que este es el campo en la base de datos
+            $fechaIngreso,
+            $fechaRetiro
+        )
+    );
 }
-  
+
 private function agregarFirmasDepartamentos($pdf, $firmas) {
-    $pdf->Ln(10);
+    $pdf->Ln(1);
 
     $col_width = 90;
     $row_height = 35; // Ajustar altura para acomodar descuentos
@@ -528,12 +576,6 @@ private function agregarFirmasDepartamentos($pdf, $firmas) {
         }
     }
 }
-
-
-
-
-
-
 
   public function getDepartments() {
     return $this->departments;

@@ -84,7 +84,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <h1>Iniciar sesión</h1> 
             <form method="POST" id="login-form">
                 <div class="form-group">
-                    <label for="cedula">Cédula:</label>
+                    <label for="cedula">ID:</label>
                     <input type="text" id="cedula" name="cedula" 
                            placeholder="Ingrese su cédula" required>
                 </div>

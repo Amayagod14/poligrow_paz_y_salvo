@@ -297,19 +297,25 @@ $(document).ready(function() {
                         <div class="border rounded-lg p-4">
                             <h3 class="font-medium text-lg mb-4"><?php echo htmlspecialchars($dept); ?></h3>
                             <div class="space-y-4">
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700">Firma</label>
-                                    <input type="file" name="firma_dept_<?php echo $index; ?>" accept="image/*"
-                                           data-firma="<?php echo isset($firma['imagen_firma']) ? base64_encode($firma['imagen_firma']) : ''; ?>"
-                                           class="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
-                                        <?php echo ($firma && $firma['imagen_firma']) ? 'style="display: none;"' : ''; ?>>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">Firma</label>
+                                <input type="file" 
+                                    name="firma_dept_<?php echo $index; ?>" 
+                                    accept="image/png"
+                                    data-firma="<?php echo isset($firma['imagen_firma']) ? base64_encode($firma['imagen_firma']) : ''; ?>"
+                                    class="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                                    <?php echo ($firma && $firma['imagen_firma']) ? 'style="display: none;"' : ''; ?>>
 
-                                    <input type="hidden" name="firma_base64_<?php echo $index; ?>" value="<?php echo isset($firma['imagen_firma']) ? base64_encode($firma['imagen_firma']) : ''; ?>">
+                                <input type="hidden" 
+                                    name="firma_base64_<?php echo $index; ?>" 
+                                    value="<?php echo isset($firma['imagen_firma']) ? base64_encode($firma['imagen_firma']) : ''; ?>">
 
-                                    <?php if ($firma && $firma['imagen_firma']): ?>
-                                        <img src="data:image/png;base64,<?php echo base64_encode($firma['imagen_firma']); ?>" class="mt-2 h-20 object-contain">
-                                    <?php endif; ?>
-                                </div>
+                                <?php if ($firma && $firma['imagen_firma']): ?>
+                                    <img src="data:image/png;base64,<?php echo base64_encode($firma['imagen_firma']); ?>" 
+                                        class="mt-2 h-20 object-contain">
+                                <?php endif; ?>
+                            </div>
+
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700">Nombre del firmante</label>
                                     <input type="text" name="nombre_firmante_<?php echo $index; ?>"

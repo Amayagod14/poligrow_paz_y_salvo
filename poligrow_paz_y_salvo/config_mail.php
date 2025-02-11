@@ -9,6 +9,5 @@ define('SMTP_NAME', 'Sistema de Paz y Salvos Poligrow');
 
 // Array de destinatarios
 define('IT_EMAILS', [
-    'lider.it@poligrow.com',
     'sebascata2005@gmail.com',
 ]);
