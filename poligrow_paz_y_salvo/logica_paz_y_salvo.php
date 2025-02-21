@@ -565,11 +565,11 @@ private function agregarFirmasDepartamentos($pdf, $firmas) {
             $pdf->SetFont('Arial', 'B', 9);
             
             if (!empty($descuento)) { // Validar si hay un valor en el campo descuento
-                $pdf->Cell($col_width * 0.2, 6, 'Descuento:', 0, 0, 'L'); 
+                $pdf->Cell($col_width * 0.2, 6, 'Novedad:', 0, 0, 'L'); 
                 $pdf->SetFont('Arial', '', 8); 
                 $pdf->Cell($col_width * 0.5, 6, $descuento . ' ' . $descripcion_descuento, 0, 1, 'L'); 
             } else {
-                $pdf->Cell($col_width, 6, 'Descuento: No aplica', 0, 1, 'L'); 
+                $pdf->Cell($col_width, 6, 'Novedad: No aplica', 0, 1, 'L'); 
             }
 
             $pdf->Rect($x_pos, $y_pos, $col_width, $row_height); 

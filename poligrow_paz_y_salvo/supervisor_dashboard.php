@@ -60,11 +60,12 @@ $pazYSalvo = new PazYSalvo();
             <span class="text-gray-600 font-semibold">
                 <i class="fas fa-user-tie mr-2"></i><?php echo $_SESSION['cargo']; ?>
             </span>
+            
             <button onclick="confirmarCerrarSesion()" class="btn btn-danger"> 
                 <i class="fas fa-sign-out-alt mr-2"></i>Cerrar sesión
             </button>
         </div>
-    </div>
+        </div>
 
         <!-- Barra de búsqueda -->
         <div class="mb-6">
@@ -80,6 +81,11 @@ $pazYSalvo = new PazYSalvo();
                     <span class="ml-2 text-green-500">Cargando...</span>
                 </div>
             </div>
+        </div>
+        <div class="mb-4">
+            <a href="register.php" class="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
+                <i class="fas fa-user-plus mr-2"></i>Registrar Usuario
+            </a>
         </div>
 
         <!-- Sección Completados -->
@@ -238,20 +244,26 @@ $pazYSalvo = new PazYSalvo();
 
     // Agregar botón de crear solo si el estado es pendiente
     if (empleado.estado === 'pendiente') {
-    row += `
-                <a href="generar_paz_y_salvo_empleado.php?documento=${empleado.documento}" 
-                   class="btn btn-primary"
-                   title="Crear Paz y Salvo">
-                    <i class="fas fa-plus-circle"></i>
-                </a>`;
-}
+        row += `
+            <a href="generar_paz_y_salvo_empleado.php?documento=${empleado.documento}" 
+               class="btn btn-primary"
+               title="Crear Paz y Salvo">
+                <i class="fas fa-plus-circle"></i>
+            </a>`;
+    }
 
+    // Botón de eliminar
+    row += `
+            <button onclick="eliminarPazYSalvo(${empleado.empleado_id})" class="btn btn-danger" title="Eliminar Paz y Salvo">
+                <i class="fas fa-trash-alt"></i>
+            </button>`;
 
     row += `
                 </div>
             </td>
         </tr>`;
-
+    
+    // Agregar la fila a la tabla correspondiente según el estado
     switch(empleado.estado) {
         case 'completado':
             $('#tabla-completados tbody').append(row);
@@ -265,6 +277,7 @@ $pazYSalvo = new PazYSalvo();
             break;
     }
 });
+
 
         }
 
@@ -325,6 +338,33 @@ $pazYSalvo = new PazYSalvo();
             }, 500);
         });
     });
+    function eliminarPazYSalvo(empleado_id) {
+    Swal.fire({
+        title: '¿Estás seguro de eliminar este Paz y Salvo?',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#ef4444',
+        cancelButtonColor: '#10b981',
+        confirmButtonText: 'Sí, eliminar',
+        cancelButtonText: 'Cancelar'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            $.ajax({
+                url: 'eliminar_paz_y_salvo.php',
+                type: 'POST',
+                data: { empleado_id: empleado_id },
+                success: function(response) {
+                    Swal.fire('Eliminado!', response, 'success');
+                    cargarDatos(); // Actualizar la tabla después de eliminar
+                },
+                error: function(xhr, status, error) {
+                    Swal.fire('Error', 'No se pudo eliminar el Paz y Salvo.', 'error');
+                }
+            });
+        }
+    });
+}
+
     </script>
 </body>
 </html>

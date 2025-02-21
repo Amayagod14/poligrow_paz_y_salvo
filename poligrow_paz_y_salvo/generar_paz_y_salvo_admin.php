@@ -298,7 +298,7 @@ $(document).ready(function() {
                             <h3 class="font-medium text-lg mb-4"><?php echo htmlspecialchars($dept); ?></h3>
                             <div class="space-y-4">
                             <div>
-                                <label class="block text-sm font-medium text-gray-700">Firma</label>
+                                <label class="block text-sm font-medium text-gray-700">Firma (obligatoria en .PNG!)</label>
                                 <input type="file" 
                                     name="firma_dept_<?php echo $index; ?>" 
                                     accept="image/png"
@@ -317,26 +317,26 @@ $(document).ready(function() {
                             </div>
 
                                 <div>
-                                    <label class="block text-sm font-medium text-gray-700">Nombre del firmante</label>
+                                    <label class="block text-sm font-medium text-gray-700">Nombre del firmante (Obligatorio.)</label>
                                     <input type="text" name="nombre_firmante_<?php echo $index; ?>"
                                            value="<?php echo isset($firma['nombre_firmante']) ? $firma['nombre_firmante'] : ''; ?>"
                                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
                                 </div>
                                 <div>
-                                    <label class="block text-sm font-medium text-gray-700">Fecha de firma</label>
+                                    <label class="block text-sm font-medium text-gray-700">Fecha de firma (Obligatorio.)</label>
                                     <input type="text" name="fecha_firma_<?php echo $index; ?>"
                                            value="<?php echo isset($firma['fecha_firma']) ? date('d/m/Y', strtotime($firma['fecha_firma'])) : ''; ?>"
                                            class="datepicker mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
                                 </div>
                                 <div>
-                                    <label class="block text-sm font-medium text-gray-700">Descuento</label>
+                                    <label class="block text-sm font-medium text-gray-700">Novedad (Solo si se requiere un descuento o un pago.)</label>
                                     <input type="text" name="descuento_<?php echo $index; ?>"
                                         value="<?php echo isset($firma['descuento']) ? htmlspecialchars($firma['descuento'], ENT_QUOTES, 'UTF-8') : '0'; ?>"
                                         class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
                                 </div>
 
                                 <div>
-                                    <label class="block text-sm font-medium text-gray-700">Descripción del descuento</label>
+                                    <label class="block text-sm font-medium text-gray-700">Descripción de la novedad (Solo si se requiere.)</label>
                                     <textarea name="descripcion_descuento_<?php echo $index; ?>"
                                               class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"><?php echo isset($firma['descripcion_descuento']) ? $firma['descripcion_descuento'] : ''; ?></textarea>
                                 </div>

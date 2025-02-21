@@ -11,7 +11,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $_POST['area'], 
         $_POST['password']
     )) {
-        header('Location: index.php');
+        header('Location: supervisor_dashboard.php');
         exit;
     } else {
         $error = "Error al registrarse.";
@@ -74,12 +74,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                            class="mt-1 focus:ring-green-500 focus:border-green-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
                 </div>
                 <button type="submit" class="btn btn-primary w-full mt-4">
-                    Registrarse
+                    Registrar empleado
                 </button>
             </form>
-            <p class="mt-4 text-center text-sm text-gray-600">
-                ¿Ya tienes una cuenta? <a href="index.php" class="text-green-600 hover:text-green-500">Inicia sesión aquí</a>
-            </p>
         </div>
     </div>
 </body>
