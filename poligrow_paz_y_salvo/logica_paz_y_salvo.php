@@ -564,18 +564,32 @@ private function agregarFirmasDepartamentos($pdf, $firmas) {
             $pdf->SetXY($x_pos, $pdf->GetY()); 
             $pdf->SetFont('Arial', 'B', 9);
             
-            if (!empty($descuento)) { // Validar si hay un valor en el campo descuento
-                $pdf->Cell($col_width * 0.2, 6, 'Novedad:', 0, 0, 'L'); 
+            // Separar "Pago" y "Descuento"
+            $pdf->Cell($col_width * 0.1, 6, 'Pago:', 0, 0, 'L'); 
+            $pdf->SetFont('Arial', '', 8); 
+
+            if (!empty($descuento) || !empty($descripcion_descuento)) {
+                $pdf->Cell($col_width * 0.3, 6, $descuento, 0, 0, 'L'); 
+                // Descuento en negrita
+                $pdf->SetFont('Arial', 'B', 8); 
+                $pdf->Cell($col_width * 0.2, 6, 'Descuento:', 0, 0, 'L'); 
                 $pdf->SetFont('Arial', '', 8); 
-                $pdf->Cell($col_width * 0.5, 6, $descuento . ' ' . $descripcion_descuento, 0, 1, 'L'); 
+                $pdf->Cell($col_width * 0.2, 6, $descripcion_descuento, 0, 1, 'L'); 
             } else {
-                $pdf->Cell($col_width, 6, 'Novedad: No aplica', 0, 1, 'L'); 
+                $pdf->Cell($col_width * 0.3, 6, ' ', 0, 0, 'L');  // Espacio para "Pago"
+                $pdf->SetFont('Arial', 'B', 8); 
+                $pdf->Cell($col_width * 0.2, 6, 'Descuento:', 0, 0, 'L'); 
+                $pdf->SetFont('Arial', '', 8); 
+                $pdf->Cell($col_width * 0.2, 6, ' ', 0, 1, 'L');  // Espacio vacío para "Descuento"
             }
 
             $pdf->Rect($x_pos, $y_pos, $col_width, $row_height); 
         }
     }
 }
+
+
+
 
   public function getDepartments() {
     return $this->departments;

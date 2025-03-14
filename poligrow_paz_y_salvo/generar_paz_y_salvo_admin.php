@@ -329,16 +329,18 @@ $(document).ready(function() {
                                            class="datepicker mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
                                 </div>
                                 <div>
-                                    <label class="block text-sm font-medium text-gray-700">Novedad (Solo si se requiere un descuento o un pago.)</label>
+                                    <label class="block text-sm font-medium text-gray-700">Novedad de pago</label>
                                     <input type="text" name="descuento_<?php echo $index; ?>"
-                                        value="<?php echo isset($firma['descuento']) ? htmlspecialchars($firma['descuento'], ENT_QUOTES, 'UTF-8') : '0'; ?>"
-                                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                                        value="<?php echo isset($firma['descuento']) ? htmlspecialchars($firma['descuento'], ENT_QUOTES, 'UTF-8') : ''; ?>"
+                                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                                        placeholder="Ingrese novedad o descuento">
                                 </div>
 
                                 <div>
-                                    <label class="block text-sm font-medium text-gray-700">Descripción de la novedad (Solo si se requiere.)</label>
+                                    <label class="block text-sm font-medium text-gray-700">Novedad de descuento</label>
                                     <textarea name="descripcion_descuento_<?php echo $index; ?>"
-                                              class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"><?php echo isset($firma['descripcion_descuento']) ? $firma['descripcion_descuento'] : ''; ?></textarea>
+                                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                                            placeholder="Ingrese descripción de la novedad"><?php echo isset($firma['descripcion_descuento']) ? htmlspecialchars($firma['descripcion_descuento'], ENT_QUOTES, 'UTF-8') : ''; ?></textarea>
                                 </div>
                             </div>
                         </div>
