@@ -22,7 +22,8 @@ class DatabaseConfig {
                 die("Error de conexión: " . self::$instance->connect_error);
             }
             
-            self::$instance->set_charset("utf8");
+            self::$instance->set_charset("utf8mb4");
+
         }
         return self::$instance;
     }
