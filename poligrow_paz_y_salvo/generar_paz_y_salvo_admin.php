@@ -297,52 +297,66 @@ $(document).ready(function() {
                         <div class="border rounded-lg p-4">
                             <h3 class="font-medium text-lg mb-4"><?php echo htmlspecialchars($dept); ?></h3>
                             <div class="space-y-4">
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700">Firma (obligatoria en .PNG!)</label>
-                                <input type="file" 
-                                    name="firma_dept_<?php echo $index; ?>" 
-                                    accept="image/png"
-                                    data-firma="<?php echo isset($firma['imagen_firma']) ? base64_encode($firma['imagen_firma']) : ''; ?>"
-                                    class="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
-                                    <?php echo ($firma && $firma['imagen_firma']) ? 'style="display: none;"' : ''; ?>>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700">Firma (obligatoria en .PNG!)</label>
+                                    <input type="file" 
+                                        name="firma_dept_<?php echo $index; ?>" 
+                                        accept="image/png"
+                                        data-firma="<?php echo isset($firma['imagen_firma']) ? base64_encode($firma['imagen_firma']) : ''; ?>"
+                                        class="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                                        <?php echo ($firma && $firma['imagen_firma']) ? 'style="display: none;"' : ''; ?>>
 
-                                <input type="hidden" 
-                                    name="firma_base64_<?php echo $index; ?>" 
-                                    value="<?php echo isset($firma['imagen_firma']) ? base64_encode($firma['imagen_firma']) : ''; ?>">
+                                    <input type="hidden" 
+                                        name="firma_base64_<?php echo $index; ?>" 
+                                        value="<?php echo isset($firma['imagen_firma']) ? base64_encode($firma['imagen_firma']) : ''; ?>">
 
-                                <?php if ($firma && $firma['imagen_firma']): ?>
-                                    <img src="data:image/png;base64,<?php echo base64_encode($firma['imagen_firma']); ?>" 
-                                        class="mt-2 h-20 object-contain">
-                                <?php endif; ?>
-                            </div>
+                                    <?php if ($firma && $firma['imagen_firma']): ?>
+                                        <img src="data:image/png;base64,<?php echo base64_encode($firma['imagen_firma']); ?>" 
+                                            class="mt-2 h-20 object-contain">
+                                    <?php endif; ?>
+                                </div>
 
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700">Nombre del firmante (Obligatorio.)</label>
                                     <input type="text" name="nombre_firmante_<?php echo $index; ?>"
-                                           value="<?php echo isset($firma['nombre_firmante']) ? $firma['nombre_firmante'] : ''; ?>"
-                                           class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                                        value="<?php echo isset($firma['nombre_firmante']) ? $firma['nombre_firmante'] : ''; ?>"
+                                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
                                 </div>
+
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700">Fecha de firma (Obligatorio.)</label>
                                     <input type="text" name="fecha_firma_<?php echo $index; ?>"
-                                           value="<?php echo isset($firma['fecha_firma']) ? date('d/m/Y', strtotime($firma['fecha_firma'])) : ''; ?>"
-                                           class="datepicker mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                                        value="<?php echo isset($firma['fecha_firma']) ? date('d/m/Y', strtotime($firma['fecha_firma'])) : ''; ?>"
+                                        class="datepicker mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
                                 </div>
+
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700">Novedad de pago</label>
                                     <input type="text" name="descuento_<?php echo $index; ?>"
                                         value="<?php echo isset($firma['descuento']) ? htmlspecialchars($firma['descuento'], ENT_QUOTES, 'UTF-8') : ''; ?>"
                                         class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                                        placeholder="Ingrese novedad o descuento">
+                                        placeholder="Ingrese descripcion de pago">
                                 </div>
 
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700">Novedad de descuento</label>
                                     <textarea name="descripcion_descuento_<?php echo $index; ?>"
                                             class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                                            placeholder="Ingrese descripción de la novedad"><?php echo isset($firma['descripcion_descuento']) ? htmlspecialchars($firma['descripcion_descuento'], ENT_QUOTES, 'UTF-8') : ''; ?></textarea>
+                                            placeholder="Ingrese descripción de el descuento"><?php echo isset($firma['descripcion_descuento']) ? htmlspecialchars($firma['descripcion_descuento'], ENT_QUOTES, 'UTF-8') : ''; ?></textarea>
                                 </div>
+
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700">¿Está a paz y salvo?</label>
+                                    <div class="flex items-center">
+                                        <input type="text" id="paz_y_salvo_<?php echo $index; ?>" name="a_paz_y_salvo_<?php echo $index; ?>" value="<?php echo isset($firma['a_paz_y_salvo']) ? $firma['a_paz_y_salvo'] : ''; ?>" class="mr-2" required placeholder="Escribe 'si' o 'no'">
+                                    </div>
+                                </div>
+
+
+
                             </div>
+                        </div>
+
                         </div>
                     <?php endif; ?>
                 <?php endforeach; ?>

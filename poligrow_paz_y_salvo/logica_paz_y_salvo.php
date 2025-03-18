@@ -41,21 +41,41 @@ class PazYSalvoPDF extends FPDF {
     }
 
     public function Footer() {
-
-        
         // Configurar la fuente
         $this->SetFont('Arial', '', 12);
-        $this->SetY(-45); // Posición a 30mm del final
-        
-        // Agregar texto "Firma:"
+        $this->SetY(-45); // Posición a 45mm del final
+    
+        // Ancho total de la página
+        $totalWidth = 190; // Ajusta según el tamaño de la página
+    
+        // Ancho de cada columna
+        $columnWidth = $totalWidth / 2;
+    
+        // Agregar texto "Firma Gestión Humana:"
         $this->SetX(20); // Alinear con el margen izquierdo
-        $this->Cell(0, 10, utf8_decode('Firma:'), 0, 1, 'L');
-        
-        // Agregar el nombre del empleado en negrita
-        $this->SetX(20);
+        $this->Cell($columnWidth, 10, utf8_decode('Firma Responsable Nomina:'), 0, 0, 'L'); // Primera columna
+    
+        // Agregar texto "Firma:"
+        $this->SetX(20 + $columnWidth); // Mover a la segunda columna
+        $this->Cell($columnWidth, 10, utf8_decode('Firma:'), 0, 1, 'L'); // Segunda columna
+    
+        // Agregar el nombre predeterminado en negrita
+        $this->SetX(20); // Alinear con la primera columna
         $this->SetFont('Arial', 'B', 12);
-        $this->Cell(0, 10, utf8_decode($this->nombreEmpleado), 0, 0, 'L');
+        $this->Cell($columnWidth, 10, utf8_decode('Carlos Fragozo'), 0, 0, 'L'); // Nombre en la primera columna
+    
+        // Agregar el nombre del empleado en negrita
+        $this->SetX(20 + $columnWidth); // Mover a la segunda columna
+        $this->Cell($columnWidth, 10, utf8_decode($this->nombreEmpleado), 0, 1, 'L'); // Nombre en la segunda columna
+    
+        // Agregar la imagen de firma predeterminada de Gestión Humana
+        $this->SetX(20); // Alinear con la primera columna
+        $this->Image('img/firma.png', $this->GetX(), $this->GetY(), 40); // Ajusta la ruta y el tamaño según sea necesario
+    
+       
     }
+    
+    
 }
 
 
@@ -295,14 +315,16 @@ private function actualizarEmpleado($empleado_id) {
             fecha_firma,
             imagen_firma,
             descuento,
-            descripcion_descuento
-        ) VALUES (?, ?, ?, ?, ?, ?, ?)
+            descripcion_descuento,
+            a_paz_y_salvo
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
         ON DUPLICATE KEY UPDATE 
             nombre_firmante = VALUES(nombre_firmante),
             fecha_firma = VALUES(fecha_firma),
             imagen_firma = VALUES(imagen_firma),
             descuento = VALUES(descuento),
-            descripcion_descuento = VALUES(descripcion_descuento)
+            descripcion_descuento = VALUES(descripcion_descuento),
+            a_paz_y_salvo = VALUES(a_paz_y_salvo)
     ");
 
     foreach ($this->departments as $index => $dept) {
@@ -319,15 +341,18 @@ private function actualizarEmpleado($empleado_id) {
             // Obtener el descuento y la descripción del formulario como texto
             $descuento = isset($_POST["descuento_$index"]) ? $_POST["descuento_$index"] : '0';
             $descripcion_descuento = isset($_POST["descripcion_descuento_$index"]) ? $_POST["descripcion_descuento_$index"] : '';
+            // Obtener el valor de a_paz_y_salvo
+            $a_paz_y_salvo = isset($_POST["a_paz_y_salvo_$index"]) ? $_POST["a_paz_y_salvo_$index"] : '';
 
-            $stmt->bind_param("issssss",
+            $stmt->bind_param("isssssss",
                 $paz_y_salvo_id,
                 $dept,
                 $_POST["nombre_firmante_$index"],
                 $fecha,
                 $firma,
                 $descuento,
-                $descripcion_descuento
+                $descripcion_descuento,
+                $a_paz_y_salvo
             );
 
             $stmt->execute();
@@ -343,21 +368,25 @@ private function actualizarEmpleado($empleado_id) {
             // Obtener el descuento y la descripción del formulario como texto
             $descuento = isset($_POST["descuento_$index"]) ? $_POST["descuento_$index"] : '0';
             $descripcion_descuento = isset($_POST["descripcion_descuento_$index"]) ? $_POST["descripcion_descuento_$index"] : '';
+            // Obtener el valor de a_paz_y_salvo
+            $a_paz_y_salvo = isset($_POST["a_paz_y_salvo_$index"]) ? $_POST["a_paz_y_salvo_$index"] : '';
 
-            // Actualizar la firma (nombre, fecha, descuento y descripción)
+            // Actualizar la firma (nombre, fecha, descuento, descripción y a_paz_y_salvo)
             $stmt_update = $this->conn->prepare("
                 UPDATE firmas SET 
                     nombre_firmante = ?, 
                     fecha_firma = ?, 
                     descuento = ?, 
-                    descripcion_descuento = ? 
+                    descripcion_descuento = ?, 
+                    a_paz_y_salvo = ? 
                 WHERE paz_y_salvo_id = ? AND departamento = ?
             ");
-            $stmt_update->bind_param("sssssi", 
+            $stmt_update->bind_param("ssssssi", 
                 $_POST["nombre_firmante_$index"], 
                 $fecha, 
                 $descuento, 
                 $descripcion_descuento, 
+                $a_paz_y_salvo,
                 $paz_y_salvo_id, 
                 $dept
             );
@@ -366,6 +395,7 @@ private function actualizarEmpleado($empleado_id) {
         }
     }
 }
+
 
   private function actualizarEstadoPazYSalvo($paz_y_salvo_id) {
     // Contar las firmas existentes para el Paz y Salvo
@@ -475,21 +505,15 @@ private function getEmpleadoInfo($empleado_id) {
     $fechaRetiro = date('d/m/Y', strtotime($empleado['fecha_retiro']));
 
     return utf8_decode(
-        sprintf(
-            "Poligrow Colombia SAS. Certifica que el Señor(a) %s %s " .
-            "quien desempeña el cargo de %s " .
-            "identificado con cédula de ciudadanía número %s " .
-            "se encuentra Paz y Salvo con la empresa por concepto de %s.\n\n" .
-            "Fecha de ingreso: %s" . str_repeat(" ", 35) . "Fecha de retiro: %s",
-            
-            $empleado['nombres'],
-            $empleado['apellidos'],
-            $empleado['cargo'],
-            $empleado['cedula'],
-            $empleado['motivo_retiro'], // Asumiendo que este es el campo en la base de datos
-            $fechaIngreso,
-            $fechaRetiro
-        )
+sprintf(
+    "Entre los suscritos a saber, por una parte POLIGROW COLOMBIA SAS en calidad de empleador y por otra %s en calidad de %s, identificado con documento No. %s se celebró contrato laboral el día %s, contrato que a fecha %s finaliza por concepto de %s así las cosas, se firma la presente paz y salvo con las siguientes manifestaciones.",
+    $empleado['nombres'] . ' ' . $empleado['apellidos'],
+    $empleado['cargo'],
+    $empleado['cedula'],
+    $fechaIngreso,
+    $fechaRetiro,
+    $empleado['motivo_retiro']
+)
     );
 }
 
@@ -497,14 +521,14 @@ private function agregarFirmasDepartamentos($pdf, $firmas) {
     $pdf->Ln(1);
 
     $col_width = 90;
-    $row_height = 35; // Ajustar altura para acomodar descuentos
+    $row_height = 36; // Ajustar altura para acomodar descuentos
     $x_start = 20;
     $x_spacing = 90;
-    $y_start = $pdf->GetY(); 
-    $y_spacing = 35; // Ajustar espaciado entre filas
+    $y_start = $pdf->GetY();
+    $y_spacing = 36; // Ajustar espaciado entre filas
 
     $num_firmas = count($this->departments);
-    $num_cols = 2; 
+    $num_cols = 2;
     $num_rows = ceil($num_firmas / $num_cols);
 
     for ($i = 0; $i < $num_firmas; $i++) {
@@ -527,6 +551,7 @@ private function agregarFirmasDepartamentos($pdf, $firmas) {
                 $fecha_firma = $firma['fecha_firma'];
                 $descuento = $firma['descuento'];
                 $descripcion_descuento = $firma['descripcion_descuento'];
+                $a_paz_y_salvo = isset($firma['a_paz_y_salvo']) ? $firma['a_paz_y_salvo'] : ''; // Obtener el valor de a_paz_y_salvo
                 break;
             }
         }
@@ -535,8 +560,8 @@ private function agregarFirmasDepartamentos($pdf, $firmas) {
             $temp_filename = tempnam(sys_get_temp_dir(), 'firma_') . '.png';
             file_put_contents($temp_filename, $imagen_firma);
 
-            $firma_width = 55; 
-            $firma_height = 20; 
+            $firma_width = 55;
+            $firma_height = 20;
 
             $x_firma = $x_pos + ($col_width - $firma_width) / 2;
             $y_firma = $y_pos + 6;
@@ -551,39 +576,42 @@ private function agregarFirmasDepartamentos($pdf, $firmas) {
 
             unlink($temp_filename);
 
-            $pdf->SetXY($x_pos, $y_firma + $firma_height - 2); 
-            $pdf->SetFont('Arial', '', 8.5);
-            $nombre_firmante = substr($nombre_firmante, 0, 25); 
+// Iniciar la sección de Pago y Descuento
+$pdf->SetXY($x_pos, $y_firma + $firma_height - 2);
+$pdf->SetFont('Arial', 'B', 9);
 
-            $nombre_width = $col_width * 0.6; 
-            $fecha_width = $col_width * 0.4;
+// Imprimir "Pago" en negrita
+$pdf->Cell($col_width * 0.1, 6, 'Pago: ', 0, 0, 'L');
 
-            $pdf->Cell($nombre_width, 4, $nombre_firmante, 0, 0, 'L');
-            $pdf->Cell($fecha_width, 4, $fecha_firma, 0, 1, 'R'); 
+// Imprimir el valor de pago sin negrita
+$pdf->SetFont('Arial', '', 9);
+$pdf->Cell($col_width * 0.2, 6, $descuento, 0, 1, 'L');
 
-            $pdf->SetXY($x_pos, $pdf->GetY()); 
-            $pdf->SetFont('Arial', 'B', 9);
-            
-            // Separar "Pago" y "Descuento"
-            $pdf->Cell($col_width * 0.1, 6, 'Pago:', 0, 0, 'L'); 
-            $pdf->SetFont('Arial', '', 8); 
+// Imprimir "Descuento" en negrita
+$pdf->SetX($x_pos); // Resetear la posición X
+$pdf->SetFont('Arial', 'B', 8);
+$pdf->Cell($col_width * 0.1, 6, 'Descuento: ', 0, 0, 'L');
 
-            if (!empty($descuento) || !empty($descripcion_descuento)) {
-                $pdf->Cell($col_width * 0.3, 6, $descuento, 0, 0, 'L'); 
-                // Descuento en negrita
-                $pdf->SetFont('Arial', 'B', 8); 
-                $pdf->Cell($col_width * 0.2, 6, 'Descuento:', 0, 0, 'L'); 
-                $pdf->SetFont('Arial', '', 8); 
-                $pdf->Cell($col_width * 0.2, 6, $descripcion_descuento, 0, 1, 'L'); 
-            } else {
-                $pdf->Cell($col_width * 0.3, 6, ' ', 0, 0, 'L');  // Espacio para "Pago"
-                $pdf->SetFont('Arial', 'B', 8); 
-                $pdf->Cell($col_width * 0.2, 6, 'Descuento:', 0, 0, 'L'); 
-                $pdf->SetFont('Arial', '', 8); 
-                $pdf->Cell($col_width * 0.2, 6, ' ', 0, 1, 'L');  // Espacio vacío para "Descuento"
-            }
+// Imprimir la descripción del descuento sin negrita, movida ligeramente a la derecha
+$pdf->SetFont('Arial', '', 9);
+$pdf->Cell($col_width * 0.07, 6, '', 0, 0, 'L'); // Ajuste más pequeño
+$pdf->Cell($col_width * 0.25, 6, $descripcion_descuento, 0, 1, 'L');
 
-            $pdf->Rect($x_pos, $y_pos, $col_width, $row_height); 
+// Iniciar la sección del nombre y la fecha del firmante
+$pdf->SetXY($x_pos + $col_width * 0.7, $y_firma + $firma_height - 2); // Mover a la derecha
+$pdf->SetFont('Arial', '', 8.5);
+$nombre_firmante = substr($nombre_firmante, 0, 9);
+$pdf->Cell($col_width * 0.6, 4, $nombre_firmante, 0, 1, 'L');
+
+// Imprimir la fecha debajo del nombre
+$pdf->SetX($x_pos + $col_width * 0.4); // Mover a la derecha
+$pdf->Cell($col_width * 0.5, 4, $fecha_firma, 0, 1, 'R');
+
+// Imprimir "a paz y salvo" debajo de la fecha
+$pdf->SetX($x_pos + $col_width * 0.7); // Mantener la misma posición X
+$pdf->Cell($col_width * 0.6, 4, 'Paz y Salvo: ' . $a_paz_y_salvo, 0, 1, 'L');
+
+$pdf->Rect($x_pos, $y_pos, $col_width, $row_height);
         }
     }
 }
