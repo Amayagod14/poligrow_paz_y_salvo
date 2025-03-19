@@ -43,7 +43,7 @@ class PazYSalvoPDF extends FPDF {
     public function Footer() {
         // Configurar la fuente
         $this->SetFont('Arial', '', 12);
-        $this->SetY(-45); // Posición a 45mm del final
+        $this->SetY(-75); // Posición a 45mm del final
     
         // Ancho total de la página
         $totalWidth = 190; // Ajusta según el tamaño de la página
@@ -57,12 +57,12 @@ class PazYSalvoPDF extends FPDF {
     
         // Agregar texto "Firma:"
         $this->SetX(20 + $columnWidth); // Mover a la segunda columna
-        $this->Cell($columnWidth, 10, utf8_decode('Firma:'), 0, 1, 'L'); // Segunda columna
+        $this->Cell($columnWidth, 10, utf8_decode('Firma Empleado:'), 0, 1, 'L'); // Segunda columna
     
         // Agregar el nombre predeterminado en negrita
         $this->SetX(20); // Alinear con la primera columna
         $this->SetFont('Arial', 'B', 12);
-        $this->Cell($columnWidth, 10, utf8_decode('Carlos Fragozo'), 0, 0, 'L'); // Nombre en la primera columna
+        $this->Cell($columnWidth, 10, utf8_decode('CARLOS FRAGOZO'), 0, 0, 'L'); // Nombre en la primera columna
     
         // Agregar el nombre del empleado en negrita
         $this->SetX(20 + $columnWidth); // Mover a la segunda columna
@@ -70,7 +70,7 @@ class PazYSalvoPDF extends FPDF {
     
         // Agregar la imagen de firma predeterminada de Gestión Humana
         $this->SetX(20); // Alinear con la primera columna
-        $this->Image('img/firma.png', $this->GetX(), $this->GetY(), 40); // Ajusta la ruta y el tamaño según sea necesario
+        $this->Image('img/firma.png', $this->GetX(), $this->GetY(), 60); // Ajusta la ruta y el tamaño según sea necesario
     
        
     }
@@ -506,7 +506,7 @@ private function getEmpleadoInfo($empleado_id) {
 
     return utf8_decode(
 sprintf(
-    "Entre los suscritos a saber, por una parte POLIGROW COLOMBIA SAS en calidad de empleador y por otra %s en calidad de %s, identificado con documento No. %s se celebró contrato laboral el día %s, contrato que a fecha %s finaliza por concepto de %s así las cosas, se firma la presente paz y salvo con las siguientes manifestaciones.",
+    "Entre los suscritos a saber, por una parte POLIGROW COLOMBIA SAS en calidad de empleador y por otra %s en calidad de %s, identificado con documento No. %s se celebró contrato laboral el día %s, contrato que a fecha %s finaliza por concepto de %s, así las cosas, se firma la presente paz y salvo con las siguientes manifestaciones.",
     $empleado['nombres'] . ' ' . $empleado['apellidos'],
     $empleado['cargo'],
     $empleado['cedula'],
@@ -520,12 +520,12 @@ sprintf(
 private function agregarFirmasDepartamentos($pdf, $firmas) {
     $pdf->Ln(1);
 
-    $col_width = 90;
-    $row_height = 36; // Ajustar altura para acomodar descuentos
+    $col_width = 85; // Ancho ligeramente reducido
+    $row_height = 30; // Mantener la altura original
     $x_start = 20;
-    $x_spacing = 90;
+    $x_spacing = 85; // Mantener el espaciado original
     $y_start = $pdf->GetY();
-    $y_spacing = 36; // Ajustar espaciado entre filas
+    $y_spacing = 30; // Mantener el espaciado entre filas
 
     $num_firmas = count($this->departments);
     $num_cols = 2;
@@ -551,7 +551,7 @@ private function agregarFirmasDepartamentos($pdf, $firmas) {
                 $fecha_firma = $firma['fecha_firma'];
                 $descuento = $firma['descuento'];
                 $descripcion_descuento = $firma['descripcion_descuento'];
-                $a_paz_y_salvo = isset($firma['a_paz_y_salvo']) ? $firma['a_paz_y_salvo'] : ''; // Obtener el valor de a_paz_y_salvo
+                $a_paz_y_salvo = isset($firma['a_paz_y_salvo']) ? $firma['a_paz_y_salvo'] : '';
                 break;
             }
         }
@@ -560,11 +560,12 @@ private function agregarFirmasDepartamentos($pdf, $firmas) {
             $temp_filename = tempnam(sys_get_temp_dir(), 'firma_') . '.png';
             file_put_contents($temp_filename, $imagen_firma);
 
-            $firma_width = 55;
-            $firma_height = 20;
+            // Reducir el tamaño de la firma
+            $firma_width = 47; // Ancho reducido
+            $firma_height = 14; // Altura reducida
 
             $x_firma = $x_pos + ($col_width - $firma_width) / 2;
-            $y_firma = $y_pos + 6;
+            $y_firma = $y_pos + 6; // Mantener la posición vertical
 
             $pdf->Image(
                 $temp_filename,
@@ -573,6 +574,7 @@ private function agregarFirmasDepartamentos($pdf, $firmas) {
                 $firma_width,
                 $firma_height
             );
+
 
             unlink($temp_filename);
 
@@ -594,7 +596,7 @@ $pdf->Cell($col_width * 0.1, 6, 'Descuento: ', 0, 0, 'L');
 
 // Imprimir la descripción del descuento sin negrita, movida ligeramente a la derecha
 $pdf->SetFont('Arial', '', 9);
-$pdf->Cell($col_width * 0.07, 6, '', 0, 0, 'L'); // Ajuste más pequeño
+$pdf->Cell($col_width * 0.08, 6, '', 0, 0, 'L'); // Ajuste más pequeño
 $pdf->Cell($col_width * 0.25, 6, $descripcion_descuento, 0, 1, 'L');
 
 // Iniciar la sección del nombre y la fecha del firmante
